@@ -136,6 +136,8 @@ When a new session starts, scan for the newest `HANDOFF-*.ftmd` (without `.done`
 
 After reading, summarize: what the project is, current status, next action.
 
+**When no handoff exists:** If the user says "先读 HANDOFF" but no `.ftmd` file is found, reply: **"没有找到交接文档。这是一个全新的开始。"** Then proceed normally — the session is starting fresh and doesn't need bootstrapping.
+
 ### Source-of-Truth Rank
 
 When the handoff disagrees with reality, reality always wins. Precedence:
@@ -187,7 +189,7 @@ This is a gentle nudge, not a demand. If the user says no, reset the counter and
 |---------|--------|
 | `/handoff` or `写交接文档` | Generate timestamped handoff + run cleanup |
 | `先读 HANDOFF` (new session) | Find newest `.ftmd`, read, summarize |
-| Undone handoff exists at session start | Proactively mention it to the user |
+| Undone handoff exists at session start | Auto-read newest, summarize status |
 | Context rot detected mid-session | Suggest `/handoff` (max 2x per session) |
 | Cleanup auto-runs | On every `/handoff` invocation |
 

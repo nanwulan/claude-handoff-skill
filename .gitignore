@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# Handoff documents (these are session outputs, not source)
+HANDOFF-*.ftmd
+!HANDOFF-example.ftmd

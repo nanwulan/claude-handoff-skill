@@ -9,9 +9,34 @@ description: Use when the user says "/handoff", "写交接文档", "write handof
 
 Generate `HANDOFF.ftmd` at project root — a structured document for a fresh AI session with zero prior context. Fully self-contained: no "as discussed", no implicit references.
 
+## FTMD Format
+
+FTMD stands for **Frictionless Transfer Markdown Document**. It is standard Markdown with a lightweight structural contract designed for AI-to-AI handoff.
+
+| Property | Spec |
+|----------|------|
+| **Extension** | `.ftmd` |
+| **Syntax** | Standard Markdown (CommonMark + GFM tables) |
+| **Sections** | 8 required sections (see below), each a level-2 heading |
+| **Encoding** | UTF-8, LF line endings |
+| **Naming** | `HANDOFF-YYYY-MM-DD.ftmd` (project sessions) or `HANDOFF-<topic-slug>-YYYY-MM-DD.ftmd` (non-project) |
+| **Frontmatter** | None — the filename IS the metadata |
+| **Verification** | Every factual claim tagged `[V]` (verified) or `[?]` (recalled) |
+
+The format is intentionally vanilla Markdown — no YAML frontmatter, no custom syntax. Any Markdown renderer can display it. The 8-section structure is the only contract; tools that consume `.ftmd` files only need to parse level-2 headings and table rows.
+
 ## Short-Session Gate
 
-Before generating, estimate the session's interaction count. If fewer than ~5 substantive exchanges (not counting simple corrections or one-word answers), ask: **"这次会话较短，确定要写交接文档吗？"** Don't generate a near-empty document — it wastes the reader's time and clutters the directory.
+Before generating, check ALL of the following. If ALL are true, the session is too short — ask: **"这次会话较短，确定要写交接文档吗？"**
+
+| Gate | Criteria |
+|------|----------|
+| **Topics** | Fewer than 3 distinct user-initiated topics |
+| **Output** | No files were created or modified |
+| **Decisions** | No architectural/technical decisions were made |
+| **Duration** | The conversation was purely Q&A / information lookup |
+
+Meeting just 1–2 of these is not enough to gate. All four must align. Don't generate a near-empty document — it wastes the reader's time and clutters the directory.
 
 ## Verification Protocol
 
@@ -105,7 +130,11 @@ The goal: no stale documents mislead a new session, no runaway disk usage.
 
 ## New Session Protocol
 
-When a new session starts, scan for the newest `HANDOFF-*.ftmd` (without `.done`) in the project root. If found, read it before anything else. After reading, summarize: what the project is, current status, next action.
+When a new session starts, scan for the newest `HANDOFF-*.ftmd` (without `.done`) in the project root. If found, read it before anything else.
+
+**Multiple handoffs:** If more than one `.ftmd` file exists, read ONLY the newest. Mark all older `.ftmd` files as `.done` immediately — they are superseded snapshots. Never read multiple handoffs: the newest one already covers the most recent state.
+
+After reading, summarize: what the project is, current status, next action.
 
 ### Source-of-Truth Rank
 
@@ -133,6 +162,8 @@ The user may also say "先读 HANDOFF" to trigger this explicitly.
 
 ## Degradation Detection
 
+### Reactive: Watch for Context Rot
+
 Watch for these signs of context rot mid-session:
 
 - Contradicting a decision made earlier in the same session
@@ -143,6 +174,12 @@ Watch for these signs of context rot mid-session:
 When any of these are detected, suggest in one sentence: **"💡 这次会话内容较多，上下文可能正在退化。要不要 `/handoff` 写一份交接文档，然后开新会话继续？"** Wait for confirmation — never run automatically.
 
 If the user declines, keep working but stay alert. If a second degradation sign appears later in the same session, suggest again with more urgency: **"⚠️ 上下文退化迹象增多，建议尽快 `/handoff`。"** Don't suggest more than twice per session — after that, trust the user's judgment.
+
+### Proactive: Milestone Check
+
+Even without degradation signs, proactively evaluate at approximately every 10th user exchange. Ask yourself: "Has meaningful work been done since the last handoff (or session start)?" If yes — files were created/changed, decisions were made, bugs were fixed — suggest: **"📝 已经聊了约 10 轮了，要不要 `/handoff` 保存一下进度？"**
+
+This is a gentle nudge, not a demand. If the user says no, reset the counter and check again in another ~10 exchanges. Don't suggest more than 3 proactive checks per session.
 
 ## Quick Reference
 

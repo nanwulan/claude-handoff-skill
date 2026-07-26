@@ -8,6 +8,19 @@
 
 It also defines the **New Session Protocol**: when a fresh session starts, it scans for the newest handoff, reads it, and bootstraps itself with full context.
 
+📄 **[See an example](HANDOFF-example.ftmd)** — a complete handoff for a fictional login redirect fix.
+
+## The FTMD Format
+
+FTMD (**Frictionless Transfer Markdown Document**) is vanilla Markdown with a structural contract. No YAML frontmatter, no custom syntax — any Markdown renderer can display it. The only contract is 8 required level-2 heading sections.
+
+| Property | Spec |
+|----------|------|
+| **Extension** | `.ftmd` |
+| **Syntax** | CommonMark + GFM tables |
+| **Sections** | 8 (Task, Completed, Blocked, Next Steps, Pitfalls, Decisions, File Map, Startup Protocol) |
+| **Verification** | Every factual claim tagged `[V]` or `[?]` |
+
 ## The 8-Section Template
 
 | # | Section | Purpose |
@@ -25,9 +38,10 @@ It also defines the **New Session Protocol**: when a fresh session starts, it sc
 
 - **Verification Protocol** — Nothing written from memory; every claim tagged `[V]` (verified) or `[?]` (recalled)
 - **Source-of-Truth Rank** — Running code > tests > docs > handoff — handoff never overrides reality
-- **Degradation Detection** — Self-monitors for context rot mid-session and suggests `/handoff`
+- **Degradation Detection** — Reactive: self-monitors for context rot mid-session. Proactive: nudges at ~10 exchange milestones
 - **claude-mem Integration** — Cross-references accumulated knowledge base for richer handoffs
 - **Auto-Cleanup** — Stale done files purged after 7 days; active files capped per directory
+- **Short-Session Gate** — Skips generation for trivial sessions (no files changed, no decisions made)
 
 ## Installation
 

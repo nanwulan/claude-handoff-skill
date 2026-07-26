@@ -1,0 +1,87 @@
+# HANDOFF — Fix Login Page Redirect Loop
+
+> Zero-context handoff for the next AI session.
+> Generated: 2026-07-26 · Session length: ~18 substantive exchanges
+
+---
+
+## 1. Task
+
+Fix the login page redirect loop in the Next.js dashboard app. Users with expired tokens get caught in an infinite redirect between `/login` and `/dashboard`, never landing on the login form.
+
+---
+
+## 2. Completed
+
+| Item | Status | Detail |
+|------|--------|--------|
+| Root cause identified `[V]` | ✅ | `AuthGuard.tsx:42` — `useEffect` dependency on `user` triggers re-render loop |
+| Token expiry check added `[V]` | ✅ | `src/utils/token.ts:15` — `isTokenExpired()` decodes JWT `exp` claim |
+| Redirect logic refactored `[V]` | ✅ | `AuthGuard.tsx` split into `AuthGuard` (render) + `useAuthRedirect` (logic) |
+| Unit tests `[V]` | ✅ | 7 new tests in `__tests__/auth-guard.test.tsx`, all pass |
+
+---
+
+## 3. Blocked
+
+### 🔧 Technical
+
+None.
+
+### 👤 Needs Decision
+
+**要不要同时处理 refresh token？** 目前只检查了 access token 过期，refresh token 流程还没接。产品那边需要确认优先级。
+
+---
+
+## 4. Next Steps
+
+| Order | Action | File |
+|-------|--------|------|
+| 1 | Deploy to staging, verify redirect fix in browser | — |
+| 2 | If approved: implement refresh token rotation | `src/utils/token.ts` |
+| 3 | Add E2E test for login flow | `cypress/e2e/login.cy.ts` |
+
+---
+
+## 5. Pitfalls
+
+| # | What happened | Why | Correct approach |
+|---|---------------|-----|------------------|
+| 1 | First fix tried `router.replace` directly in `useEffect` — caused double redirect | `useEffect` ran before `user` state settled | Redirect inside the `!user` early-return instead |
+| 2 | `isTokenExpired()` initially used `Date.now()` — tests flaky | Non-deterministic timestamp | Accept `now` as optional parameter, inject in tests |
+
+---
+
+## 6. Decisions
+
+| Decision | Why | Rejected alternatives |
+|----------|-----|----------------------|
+| **Split `AuthGuard` into two hooks** | Separate render guard from redirect logic — easier to test in isolation | Single hook with flags: test matrix exploded |
+| **Check `exp` on client, not server** | Avoid waterfall — server-side check would add 200ms per page load | SSR middleware: too slow for this use case |
+
+---
+
+## 7. File Map
+
+| Path | Role | Changed |
+|------|------|---------|
+| `src/components/AuthGuard.tsx` | Auth gate component, split into two hooks | ✅ |
+| `src/utils/token.ts` | JWT helpers: `isTokenExpired()`, `getTokenPayload()` | ✅ |
+| `src/hooks/useAuthRedirect.ts` | New — redirect logic extracted from AuthGuard | ✅ new |
+| `__tests__/auth-guard.test.tsx` | Unit tests for both hooks | ✅ new |
+| `src/middleware.ts` | Next.js middleware — considered but NOT modified | — |
+
+---
+
+## 8. Startup Protocol
+
+```bash
+npm install && npm run dev
+# App runs at http://localhost:3000
+
+# Read these first (priority order):
+# 1. src/components/AuthGuard.tsx  ← the fix lives here
+# 2. src/utils/token.ts           ← JWT helpers
+# 3. __tests__/auth-guard.test.tsx ← tests document expected behavior
+```

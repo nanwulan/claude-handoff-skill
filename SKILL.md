@@ -87,8 +87,8 @@ This file lives at project root and is **never deleted**. Each `/handoff` update
 **On every `/handoff`:**
 1. **Snapshot:** Replace. Reflect current reality (don't guess — verify against git status and file state).
 2. **Environment:** Replace. Re-run all capture commands fresh.
-3. **Decision Log:** Append only if this session made new decisions. Don't duplicate entries already present.
-4. **Failure Memory:** Append only if this session hit new pitfalls. Don't duplicate.
+3. **Decision Log:** Append only if this session made new decisions. Don't duplicate. **Cap: 30 entries max.** If exceeded, delete the oldest (bottom of file) before appending.
+4. **Failure Memory:** Append only if this session hit new pitfalls. Don't duplicate. **Cap: 30 entries max.** Same cleanup rule as Decision Log.
 5. **Open Questions:** Replace. Remove resolved ones, add new ones.
 
 **If PROJECT.ftmd doesn't exist:** create it with all sections populated.
@@ -147,6 +147,8 @@ Generate HANDOFF + update PROJECT + run cleanup. This is the primary command. No
 
 Read PROJECT.ftmd and display Decision Log + Failure Memory in chronological order (oldest first). No new file generated.
 
+This shows **decision evolution** — when and why the team changed direction, abandoned approaches, or discovered pitfalls. It is NOT a development log: don't list file edits or timestamps. Only entries with strategic weight belong here.
+
 If PROJECT.ftmd doesn't exist: "📭 这个项目还没有长期记忆。下次 `/handoff` 时会自动创建。"
 
 ### `/handoff status`
@@ -190,9 +192,21 @@ If verification fails (tests fail, unexpected git state, file deleted), don't ab
 
 ## claude-mem Integration
 
-Handoff = point-in-time snapshot. claude-mem = accumulated knowledge. They reinforce each other.
+Handoff = point-in-time project snapshot. claude-mem = cross-project accumulated knowledge. They don't overlap — they serve different time scales.
 
-**On Write:** Search memory for project observations → cross-reference with claims → add "From Memory" bonus section with 3–5 most relevant past observations.
+### Data Boundary
+
+| Data type | Belongs to | Example |
+|-----------|-----------|---------|
+| User preferences, habits | claude-mem | "栋老师 prefers TypeScript" |
+| Long-term tech stack choices | claude-mem | "This org uses React + Next.js" |
+| Current task, immediate next step | handoff | "Refactoring login module, OAuth not done" |
+| This session's decisions | handoff → PROJECT.ftmd | "Chose JWT over session tokens" |
+| Pitfalls and lessons from this project | handoff → PROJECT.ftmd | "Don't use xyz v3 with Node 22" |
+
+**Rule of thumb:** If it's true across projects or sessions → claude-mem. If it's specific to what's happening right now in this project → handoff.
+
+### On Write Search memory for project observations → cross-reference with claims → add "From Memory" bonus section with 3–5 most relevant past observations.
 
 **On Read:** After reading handoff, search memory for the project → surface relevant observations → bootstrap the session with both snapshot AND institutional knowledge.
 
@@ -267,6 +281,8 @@ Watch for: contradicting earlier decisions, re-deriving settled conclusions, des
 **First sign:** "💡 上下文可能正在退化。要不要 `/handoff` 保存进度？"
 **Second sign:** "⚠️ 退化迹象增多，建议尽快 `/handoff`。"
 **Never suggest more than twice per session.**
+
+**Consecutive rejection:** If the user declines 2 consecutive reminders (any combination of reactive + proactive), stop all further reminders for this session. The user knows — respect their rhythm.
 
 ### Proactive: Milestone Check
 

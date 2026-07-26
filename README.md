@@ -1,5 +1,8 @@
 # /handoff — AI Session Continuity Skill
 
+[![Version](https://img.shields.io/badge/version-v1.1.1-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
 > A Claude Code skill for generating structured handoff documents that enable seamless session-to-session continuity with zero prior context.
 
 ## What It Does

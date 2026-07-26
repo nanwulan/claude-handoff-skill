@@ -42,7 +42,7 @@ Meeting just 1–2 of these is not enough to gate. All four must align. Don't ge
 
 **Nothing goes in the handoff from memory alone.** Before writing a single line:
 
-1. **Reality check:** If git repo: `git status`, `git log --oneline -5`, `git diff`. If NOT a git repo: list recently modified files (`ls -lt` or equivalent), note any files changed during this session
+1. **Reality check:** If git repo: `git status`, `git log --oneline -5`, `git diff --stat`. Use the diff output verbatim in the File Map and Completed sections — this is your primary evidence for `[V]` claims. If NOT a git repo: list recently modified files (`ls -lt` or equivalent), note any files changed during this session
 2. **Re-read referenced files:** Every file the handoff will mention must be re-read during the handoff itself
 3. **Re-run tests:** If the project has tests, run them now. "Tests pass" is only written from output produced during this handoff
 
@@ -204,3 +204,9 @@ This is a gentle nudge, not a demand. If the user says no, reset the counter and
 | Skipping the file map | A new session needs to know which files to open first |
 | Writing "tests pass" from memory | Only write test results from output produced during this handoff |
 | Claims without `[V]`/`[?]` tags | Every claim must be tagged; `[?]` should be rare |
+
+## Post-Generation
+
+After the HANDOFF file is written, saved, and cleanup is done, end with: **"✅ 交接文档已保存。建议开新会话继续——输入 `先读 HANDOFF` 即可无缝续接。"**
+
+This closes the loop. Writing a handoff and then continuing in the same session defeats its purpose — the handoff goes stale the moment you keep chatting.

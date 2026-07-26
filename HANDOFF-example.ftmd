@@ -22,7 +22,18 @@ Fix the login page redirect loop in the Next.js dashboard app. Users with expire
 
 ---
 
-## 3. Blocked
+## 3. Git Snapshot
+
+| Item | Detail |
+|------|--------|
+| Branch | `fix/login-redirect-loop` |
+| Last commit | `a1b2c3d` — "Split AuthGuard into two hooks, add token expiry check" |
+| Changed files | `AuthGuard.tsx` (+42/-18), `token.ts` (+15), `useAuthRedirect.ts` (+32 new), `auth-guard.test.tsx` (+78 new) |
+| Working tree | Clean |
+
+---
+
+## 4. Blocked
 
 ### 🔧 Technical
 
@@ -34,7 +45,7 @@ None.
 
 ---
 
-## 4. Next Steps
+## 5. Next Steps
 
 | Order | Action | File |
 |-------|--------|------|
@@ -44,7 +55,7 @@ None.
 
 ---
 
-## 5. Pitfalls
+## 6. Pitfalls
 
 | # | What happened | Why | Correct approach |
 |---|---------------|-----|------------------|
@@ -53,7 +64,7 @@ None.
 
 ---
 
-## 6. Decisions
+## 7. Decisions
 
 | Decision | Why | Rejected alternatives |
 |----------|-----|----------------------|
@@ -62,7 +73,7 @@ None.
 
 ---
 
-## 7. File Map
+## 8. File Map
 
 | Path | Role | Changed |
 |------|------|---------|
@@ -74,7 +85,7 @@ None.
 
 ---
 
-## 8. Startup Protocol
+## 9. Startup Protocol
 
 ```bash
 npm install && npm run dev

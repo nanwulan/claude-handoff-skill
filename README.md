@@ -1,6 +1,6 @@
 # /handoff — Claude Code Project State Management
 
-[![Version](https://img.shields.io/badge/version-v2.0.0-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
+[![Version](https://img.shields.io/badge/version-v2.1.0-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 > A Claude Code skill that maintains project state across sessions — so any fresh Claude session can pick up exactly where you left off, with full context.
@@ -114,6 +114,25 @@ Workspace (files)
 - **claude-mem** = what we've learned across *all* projects
 - **handoff** = what we've decided and discovered in *this* project
 - **Git** = what we've changed in *this* codebase
+
+## Compatibility
+
+### Skill (automated features)
+
+The full `/handoff` experience — generation, environment capture, degradation detection, subcommands — requires **Claude Code** as the framework. Copy `SKILL.md` to `~/.claude/skills/handoff/` and it works. The underlying AI model (Claude, DeepSeek, GPT, etc.) does not matter — the skill has been tested and confirmed working on DeepSeek.
+
+| Framework | Skill works? |
+|-----------|:-----------:|
+| Claude Code | ✅ Full functionality |
+| Codex | ❌ Different skill system |
+| Cursor | ❌ Different skill system |
+| Copilot | ❌ Different skill system |
+
+### FTMD files (output)
+
+The generated `PROJECT.ftmd` and `HANDOFF-*.ftmd` files are **plain Markdown**. Any AI tool can read them — just tell it "read PROJECT.ftmd first, then HANDOFF-*.ftmd". No special format, no lock-in.
+
+> **TL;DR:** Write with Claude Code. Read with anything.
 
 ## License
 

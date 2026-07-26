@@ -188,6 +188,14 @@ Output as a checklist with ✅ / ⚠️ / ❌ markers. End with a one-line recom
 | `[V]` | Verified against the repo during this handoff — trustworthy |
 | `[?]` | Recalled from memory, not re-checked — treat as a lead only |
 
+**Every `[V]` claim MUST include its evidence source.** Write it inline, not as a separate column. The evidence answers: "How would the next session verify this independently?"
+
+- ✅ Good: `Login redirect fixed [V] (AuthGuard.tsx:42, 7 tests pass in auth-guard.test.tsx)`
+- ✅ Good: `Token expiry check added [V] (src/utils/token.ts:15, commit a1b2c3d)`
+- ❌ Bad: `Login redirect fixed [V]` — no evidence, untrustworthy
+
+If you can't name a file, test, or commit that proves the claim, downgrade it to `[?]`.
+
 If verification fails (tests fail, unexpected git state, file deleted), don't abort. Tag affected claims `[?]` and add a **"Verification Notes"** bonus section.
 
 ## claude-mem Integration
@@ -260,6 +268,16 @@ When a new session starts, read in this order:
 **No files exist:** Reply: **"没有找到交接文档。这是一个全新的开始。"**
 
 **Stale warning:** If the newest HANDOFF is older than 14 days: **"⚠️ 这份交接文档已过两周，信息可能已过时。是否仍然继续？"**
+
+### Recovery Protocol
+
+After reading PROJECT.ftmd and HANDOFF, execute these steps before doing any work:
+
+1. **Verify git state** — `git status`, `git log --oneline -3`. Does the branch and last commit match the HANDOFF's Git Snapshot? If not, note the discrepancy to the user.
+2. **Spot-check [V] claims** — pick 1–2 `[V]` claims from the Completed section, re-read the referenced file or re-run the referenced test. If evidence doesn't hold, downgrade mentally to `[?]`.
+3. **Confirm next step** — read the first item in Next Steps. State it to the user: "HANDOFF says the next step is X. Continue from here?"
+
+If the HANDOFF is confirmed valid, **begin working from Next Steps**. Don't re-explore the project from scratch.
 
 ### Source-of-Truth Rank
 

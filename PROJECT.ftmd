@@ -1,0 +1,49 @@
+# Project: claude-handoff-skill
+
+## Snapshot
+- **Stage:** Feature Development
+- **Progress:** ~85% — core system mature, iterating on real-world feedback
+- **Focus:** V2.3 self-contained skill (zero hard dependencies)
+- **Updated:** 2026-07-27
+
+## Environment
+| Variable | Value |
+|----------|-------|
+| OS | Windows 11 (Msys) |
+| Shell | bash (Git Bash) |
+| Node | v24.15.0 |
+| Python | 3.13.14 |
+| Git | 2.54.0 |
+| Claude Code | 2.1.220 |
+| Package Manager | npm |
+| Workspace | C:\Users\MECHREV\Desktop\handoff |
+
+## Decision Log
+### 2026-07-27 — Remove claude-mem hard dependency; make Handoff fully self-contained
+- **Context:** Handoff V2 had 4 hard references to claude-mem with no fallback. Users without claude-mem couldn't run the skill reliably.
+- **Decision:** Add inline guards at every touchpoint — "If available... else skip silently." claude-mem becomes an optional enhancement.
+- **Why:** Skill must work perfectly on its own. External tools are complementary, not required.
+- **Rejected:** Plugin architecture (YAGNI — only one optional dependency).
+
+### 2026-07-26 — V2 dual-file model over V1 single-file
+- **Context:** V1 overwrote the entire handoff each time, losing decisions and lessons across sessions.
+- **Decision:** PROJECT.ftmd (persistent, append-mode) + HANDOFF.ftmd (session snapshot, archived after read).
+- **Why:** Decisions and failures accumulate; session snapshots are disposable. Separating them prevents information loss.
+- **Rejected:** Single file with append (bloated), SQLite (overkill).
+
+### 2026-07-26 — 7-step sync checklist for every skill update
+- **Context:** Multiple inconsistencies found between .claude, Desktop repo, and GitHub — version numbers, format descriptions, repo description.
+- **Decision:** Mandatory 7-step (now 7+1) checklist executed after every SKILL.md change.
+- **Why:** Three locations with different purposes are easy to desync. Explicit checklist beats memory.
+- **Rejected:** Auto-sync script (too rigid, some steps need human judgment).
+
+## Failure Memory
+### 2026-07-27 — Version badge not updated during V2.3 release
+- **Attempt:** Committed V2.3 changes, pushed tag, created release — but README badge still said v2.2.0.
+- **Result:** Badge and release tag mismatched until栋老师 asked for final check.
+- **Root cause:** 7-step checklist item #3 said "version number" but didn't explicitly call out the badge URL.
+- **Lesson:** Added "grep old version numbers across all .md files" as the +1 step. Badge URL is the most frequently missed item.
+
+## Open Questions
+- Q: Test Handoff in a truly claude-mem-free environment? → need fresh install test
+- Q: Add test suite for the skill itself? → deferred from V2.1, still pending

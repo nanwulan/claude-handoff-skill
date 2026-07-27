@@ -2,15 +2,15 @@
 
 ## Snapshot
 - **Stage:** Feature Development
-- **Progress:** ~85% — core system mature, iterating on real-world feedback
-- **Focus:** V2.3 self-contained skill (zero hard dependencies)
+- **Progress:** ~90% — V2.3 hardened, fully self-contained, ready for first-time users
+- **Focus:** Zero-dependency out of the box — any Claude Code, any model, any platform
 - **Updated:** 2026-07-27
 
 ## Environment
 | Variable | Value |
 |----------|-------|
 | OS | Windows 11 (Msys) |
-| Shell | bash (Git Bash) |
+| Shell | bash (Git Bash, /usr/bin/bash) |
 | Node | v24.15.0 |
 | Python | 3.13.14 |
 | Git | 2.54.0 |
@@ -19,6 +19,24 @@
 | Workspace | C:\Users\MECHREV\Desktop\handoff |
 
 ## Decision Log
+### 2026-07-27 — Zero-dependency hardening: 3 audit rounds, 17 fixes
+- **Context:** 栋老师要求确保新用户（刚装 Claude Code、无其他 skill、任意模型、任意平台）能完美运行 Handoff。
+- **Decision:** 3 轮逐行审计，修了 17 处隐式依赖——硬编码路径、非 git 项目 guard、python vs python3、OS 中立示例、8→9 sections 计数错误。
+- **Why:** 一个 skill 的可靠性取决于最弱的新用户体验。每个 guard 都是 "if available, else skip silently"。
+- **Rejected:** 做一半就停（栋老师说"确保一定可以运行"）。
+
+### 2026-07-27 — Canonical trigger convention: 「先读 HANDOFF」
+- **Context:** 需要统一的交接仪式——写的人知道怎么交，接的人知道怎么接。
+- **Decision:** 「先读 HANDOFF」作为官方 resume 触发词，在 Post-Generation、New Session Protocol、Quick Reference、README、CONTRIBUTING、repo description 六处显式引用。
+- **Why:** 降低认知负担。不说"读 PROJECT.ftmd 和最新的 HANDOFF 文件"——就说这四个字。
+- **Rejected:** 英文短语（栋老师中文用户群）。
+
+### 2026-07-27 — README professional rewrite
+- **Context:** 栋老师要求 GitHub README 写得"详细高级、让别人看着很 nb"。
+- **Decision:** 重写为 ~295 行，新增 Hero section、Problem/Solution 叙事、ASCII 架构图、Comparison 矩阵（8 维度 4 方案）、Design Philosophy 6 条、Real-World Workflow。
+- **Why:** README 是路人判断项目质量的第一眼。技术好但文档差 = 用户不会试。
+- **Rejected:** 保持简洁版（栋老师明确要"详细高级"）。
+
 ### 2026-07-27 — Remove claude-mem hard dependency; make Handoff fully self-contained
 - **Context:** Handoff V2 had 4 hard references to claude-mem with no fallback. Users without claude-mem couldn't run the skill reliably.
 - **Decision:** Add inline guards at every touchpoint — "If available... else skip silently." claude-mem becomes an optional enhancement.
@@ -45,5 +63,5 @@
 - **Lesson:** Added "grep old version numbers across all .md files" as the +1 step. Badge URL is the most frequently missed item.
 
 ## Open Questions
-- Q: Test Handoff in a truly claude-mem-free environment? → need fresh install test
+- Q: Test Handoff on a clean install (fresh Claude Code, no skills, no claude-mem) on all 3 platforms? → simulated in audit but not physically verified
 - Q: Add test suite for the skill itself? → deferred from V2.1, still pending

@@ -166,7 +166,7 @@ Handoff is **completely self-contained** — zero external dependencies. If you 
 
 ## The FTMD Format
 
-**Frictionless Transfer Markdown Document** — a format designed for one job: transferring project state between AI sessions with zero friction.
+**FTMD** — Frictionless Transfer Markdown Document — the **AI Agent Context Transfer Format**. A file format designed for one job: transferring project state between AI sessions with zero friction.
 
 ### Design Constraints
 

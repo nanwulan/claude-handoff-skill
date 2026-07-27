@@ -274,7 +274,9 @@ Apply on every `/handoff` invocation:
 
 ## New Session Protocol
 
-When a new session starts, read in this order:
+Triggered by the user saying **"先读 HANDOFF"** (or any variant that means "read the handoff first"). This is the canonical resume command.
+
+When triggered, read in this order:
 
 1. **PROJECT.ftmd** first — understand the project's identity, history, environment
 2. **Latest HANDOFF-*.ftmd** (without `.done`) — get the current task state and next steps

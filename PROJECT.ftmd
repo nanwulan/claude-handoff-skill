@@ -19,6 +19,12 @@
 | Workspace | C:\Users\MECHREV\Desktop\handoff |
 
 ## Decision Log
+### 2026-07-27 — GitHub rule refined: new skill asks, updates auto-push
+- **Context:** 栋老师纠正——我之前把 GitHub 确认门理解成"所有情况都要问"，实际规则是分两种。
+- **Decision:** **新建 skill** → 先问栋老师要不要上传，确认后再创建仓库并推送。**更新已有 skill** → 本地验证完直接 push，不用问。
+- **Why:** 新 skill 涉及仓库创建决策，需要栋老师拍板。日常更新是常规操作，每次问反而打断节奏。
+- **Rejected:** 所有情况都问（栋老师说"每次都要更新"——指每次更新 skill 都要同步 GitHub，不是每次都要问）。
+
 ### 2026-07-27 — GitHub push must be confirmation-gated
 - **Context:** 栋老师要求以后创建/修改 skill 时，GitHub 上传不能自动执行。
 - **Decision:** 本地改完 → 验证 → 问栋老师 → 同意 → 再 push。写入 7+1 清单第 ③ 步约束。

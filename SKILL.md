@@ -138,7 +138,7 @@ Generate HANDOFF + update PROJECT + run cleanup. This is the primary command. No
 1. Run **Short-Session Gate** check. If all 4 criteria met, ask user before proceeding.
 2. Run **Verification Protocol** (git status, git diff, re-read files, run tests if available).
 3. Collect **Environment** info via auto-capture commands.
-4. Search **claude-mem** for relevant project observations.
+4. **Optional — claude-mem:** If claude-mem tools are available (see "Optional: claude-mem Integration"), search for this project's observations and cross-reference with claims. Add "From Memory (claude-mem)" bonus section to the HANDOFF. If NOT available: skip silently.
 5. Generate `HANDOFF-YYYY-MM-DD.ftmd` with all 9 sections.
 6. Update `PROJECT.ftmd`: replace Snapshot + Environment, append Decision Log + Failure Memory, replace Open Questions.
 7. Run **Cleanup Rules**.
@@ -170,7 +170,7 @@ Check project health. Report what's present and what's missing:
 | Git repo | `git status` works? Dirty working tree? |
 | Environment | All fields captured? |
 | Tests | Test suite exists? Last run passed? |
-| claude-mem | Recent observations for this project? |
+| claude-mem | If available: recent observations for this project? If not: mark "N/A (not installed)" |
 
 Output as a checklist with ✅ / ⚠️ / ❌ markers. End with a one-line recommendation.
 
@@ -198,25 +198,41 @@ If you can't name a file, test, or commit that proves the claim, downgrade it to
 
 If verification fails (tests fail, unexpected git state, file deleted), don't abort. Tag affected claims `[?]` and add a **"Verification Notes"** bonus section.
 
-## claude-mem Integration
+## Optional: claude-mem Integration
 
-Handoff = point-in-time project snapshot. claude-mem = cross-project accumulated knowledge. They don't overlap — they serve different time scales.
+Handoff is fully self-contained — it works perfectly without any external tools.
+claude-mem is an optional knowledge base that, IF available, enhances Handoff
+with cross-project context.
+
+### How to detect claude-mem
+
+claude-mem is available when the session has tools matching `mcp__*mem-search*`.
+If no such tools exist: skip ALL claude-mem steps silently. The handoff is complete
+without them.
+
+### When claude-mem IS available
+
+**On Write:** During `/handoff` generation, search memory for this project's
+observations. Add a "From Memory (claude-mem)" bonus section to HANDOFF.ftmd
+with 3–5 most relevant past observations.
+
+**On Read:** After reading HANDOFF in a new session, search memory for the project
+to surface relevant institutional knowledge alongside the session snapshot.
+
+**In Doctor:** Report whether recent observations exist for this project.
 
 ### Data Boundary
 
 | Data type | Belongs to | Example |
 |-----------|-----------|---------|
-| User preferences, habits | claude-mem | "栋老师 prefers TypeScript" |
+| User preferences, habits | claude-mem | "Prefers TypeScript" |
 | Long-term tech stack choices | claude-mem | "This org uses React + Next.js" |
 | Current task, immediate next step | handoff | "Refactoring login module, OAuth not done" |
 | This session's decisions | handoff → PROJECT.ftmd | "Chose JWT over session tokens" |
 | Pitfalls and lessons from this project | handoff → PROJECT.ftmd | "Don't use xyz v3 with Node 22" |
 
-**Rule of thumb:** If it's true across projects or sessions → claude-mem. If it's specific to what's happening right now in this project → handoff.
-
-### On Write Search memory for project observations → cross-reference with claims → add "From Memory" bonus section with 3–5 most relevant past observations.
-
-**On Read:** After reading handoff, search memory for the project → surface relevant observations → bootstrap the session with both snapshot AND institutional knowledge.
+**Rule of thumb:** If it's true across projects or sessions → claude-mem. If it's
+specific to what's happening right now in this project → handoff.
 
 ## Short-Session Gate
 
@@ -262,6 +278,7 @@ When a new session starts, read in this order:
 
 1. **PROJECT.ftmd** first — understand the project's identity, history, environment
 2. **Latest HANDOFF-*.ftmd** (without `.done`) — get the current task state and next steps
+3. **If claude-mem is available:** Search memory for this project — surface relevant observations alongside the handoff. **If not available:** Skip. Steps 1–2 provide sufficient context to start working.
 
 **Multiple HANDOFFs:** Read only the newest. Mark all older HANDOFF `.ftmd` files as `.done`.
 

@@ -70,7 +70,7 @@ FTMD (**Frictionless Transfer Markdown Document**) is vanilla Markdown with a st
 - **Verification Protocol** — Nothing written from memory; every claim tagged `[V]` or `[?]`
 - **Source-of-Truth Rank** — Running code > tests > docs > PROJECT.ftmd > HANDOFF
 - **Degradation Detection** — Reactive context rot detection + proactive milestone nudges
-- **claude-mem Integration** — Cross-references accumulated knowledge base on write and read
+- **Optional: claude-mem Integration** — enhances with cross-project context when available
 - **Auto-Cleanup** — Stale done files purged after 7 days; max 3 active HANDOFF files per project
 - **Short-Session Gate** — Skips generation for trivial sessions
 
@@ -97,23 +97,20 @@ copy SKILL.md %USERPROFILE%\.claude\skills\handoff\SKILL.md
 
 ## Design Philosophy
 
-Handoff is the **project memory layer** in a three-tier AI workflow:
+Handoff is a **self-contained project memory layer**. It works perfectly on its own.
 
 ```
 Claude Code
     ↓
-claude-mem (long-term, cross-project knowledge)
-    ↓
-handoff (project state, decisions, lessons)
+handoff (project state, decisions, lessons) ← self-contained
     ↓
 Git (code history)
     ↓
 Workspace (files)
 ```
 
-- **claude-mem** = what we've learned across *all* projects
-- **handoff** = what we've decided and discovered in *this* project
-- **Git** = what we've changed in *this* codebase
+**Optional enhancement:**
+- **claude-mem** = cross-project knowledge that enriches handoff when available
 
 ## Compatibility
 

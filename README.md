@@ -1,136 +1,290 @@
-# /handoff — Claude Code Project State Management
+# /handoff — Project State Management for Claude Code
 
 [![Version](https://img.shields.io/badge/version-v2.3.0-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![Format](https://img.shields.io/badge/format-FTMD-orange)](#the-ftmd-format)
+[![Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)](#design-philosophy)
+[![Claude Code](https://img.shields.io/badge/framework-Claude%20Code%202.1%2B-purple)](https://claude.ai/code)
 
-> A Claude Code skill that maintains project state across sessions — so any fresh Claude session can pick up exactly where you left off, with full context.
+> **Every Claude session starts with zero context. Handoff makes sure it ends with zero context loss.**
+>
+> A self-contained Claude Code skill that maintains a persistent project memory layer — accumulated decisions, environment state, failure lessons, and session snapshots — so any fresh session can pick up exactly where you left off, with the full depth of everything that came before.
 
-## What It Does
+---
 
-Handoff maintains **two files** at project root:
+## The Problem
 
-| File | Role | Lifespan |
-|------|------|----------|
-| `PROJECT.ftmd` | Long-term memory — accumulated decisions, failures, environment | **Persistent.** Never auto-deleted. |
-| `HANDOFF-YYYY-MM-DD.ftmd` | Session snapshot — what happened THIS session, what's next | **Short-lived.** Read once then archived. |
+You're deep into a project. Five sessions in, you've made dozens of micro-decisions, hit three gnarly bugs, and discovered that the dev server needs a specific Node version. Claude helped you through all of it — but Claude's memory resets every session.
 
-Together they form a complete project memory layer: `PROJECT.ftmd` tells you where you've been; `HANDOFF.ftmd` tells you where to go next.
+**Without Handoff, every new session is ground zero.** You repeat yourself. Claude re-derives settled conclusions. Context that took 20 exchanges to build is gone. The project drifts.
 
-📄 **[See an example](HANDOFF-example.ftmd)**
+**With Handoff, every session builds on the last.** Claude reads a structured snapshot of where things stand, verifies it against reality, and picks up the work — not from memory, but from documented truth.
 
-## V2: What's New
+## The Architecture
 
-| Change | Detail |
-|--------|--------|
-| **Dual-file model** | `PROJECT.ftmd` accumulates decisions and lessons across sessions — they no longer get lost when handoffs are archived |
-| **Environment auto-capture** | OS, Shell, Node, Python, Git, Claude Code version recorded automatically |
-| **Git Snapshot section** | Branch, last commit, changed files — new session doesn't need to rescan the repo |
-| **Subcommands** | `/handoff timeline` / `status` / `doctor` for quick project lookups |
-| **HANDOFF 9 sections** | Added Git Snapshot as the 3rd required section |
+Handoff maintains a **dual-file memory layer** at your project root. The separation is deliberate:
 
-## Commands
+```
+                        ┌──────────────────────────┐
+                        │     PROJECT.ftmd          │
+                        │                           │
+                        │  • Accumulates decisions   │
+                  ┌─────▶  • Records failures        │──────┐
+                  │     │  • Tracks environment      │      │
+                  │     │  • Never deleted           │      │
+                  │     └──────────────────────────┘      │
+                  │                                        │
+   ┌──────────────┴──────────────┐          ┌──────────────┴──────────────┐
+   │       Session N             │          │       Session N+1           │
+   │                             │          │                             │
+   │  Reads PROJECT.ftmd         │          │  Reads PROJECT.ftmd         │
+   │  Generates HANDOFF-*.ftmd   │──────────▶  Reads HANDOFF-*.ftmd       │
+   │  Updates PROJECT.ftmd       │          │  Marks HANDOFF as .done     │
+   │                             │          │  Continues the work         │
+   └─────────────────────────────┘          └─────────────────────────────┘
+```
 
-| Command | What it does |
-|---------|-------------|
-| `/handoff` | Generate HANDOFF + update PROJECT + cleanup |
-| `/handoff timeline` | View Decision Log and Failure Memory in chronological order |
-| `/handoff status` | One-line project status: stage, progress, current focus |
-| `/handoff doctor` | Health check: PROJECT, HANDOFF, Git, Environment, Tests |
+| File | Role | Lifespan | Updated |
+|------|------|----------|---------|
+| `PROJECT.ftmd` | **Long-term memory** — decisions, failures, environment, open questions | **Permanent.** Accumulates across all sessions. | Every `/handoff` — Snapshot + Environment replaced; Decision Log + Failure Memory appended |
+| `HANDOFF-YYYY-MM-DD.ftmd` | **Session snapshot** — completed work, git state, next steps, pitfalls, file map | **Disposable.** Read once then archived to `.ftmd.done` | Generated fresh each `/handoff` |
 
-## The FTMD Format
+**The insight:** Decisions and lessons compound over time — they belong in persistent storage. Session snapshots are ephemeral — they serve one transfer then become history. Separating them is what makes the system work.
 
-FTMD (**Frictionless Transfer Markdown Document**) is vanilla Markdown with a structural contract. No YAML frontmatter, no custom syntax. The only contract is required level-2 heading sections.
-
-### PROJECT.ftmd (5 sections)
-
-| # | Section | Update Rule |
-|---|---------|-------------|
-| 1 | **Snapshot** | Replaced — current stage, progress, focus |
-| 2 | **Environment** | Replaced — auto-captured system info |
-| 3 | **Decision Log** | **Appended** — dated entries, newest first |
-| 4 | **Failure Memory** | **Appended** — dated entries, newest first |
-| 5 | **Open Questions** | Replaced — currently unresolved |
-
-### HANDOFF.ftmd (9 sections)
-
-| # | Section | Purpose |
-|---|---------|---------|
-| 1 | **Task** | What are we building? |
-| 2 | **Completed** | What's done, each claim verified `[V]` or recalled `[?]` |
-| 3 | **Git Snapshot** | Branch, last commit, changed files |
-| 4 | **Blocked** | 🔧 Technical blockers + 👤 Decisions needed |
-| 5 | **Next Steps** | Ordered, actionable, file-specific |
-| 6 | **Pitfalls** | What went wrong, why, correct approach |
-| 7 | **Decisions** | What was chosen, why, what was rejected |
-| 8 | **File Map** | Every relevant file and what it does |
-| 9 | **Startup Protocol** | Commands to run + files to read first |
-
-## Key Features (from V1, preserved)
-
-- **Verification Protocol** — Nothing written from memory; every claim tagged `[V]` or `[?]`
-- **Source-of-Truth Rank** — Running code > tests > docs > PROJECT.ftmd > HANDOFF
-- **Degradation Detection** — Reactive context rot detection + proactive milestone nudges
-- **Optional: claude-mem Integration** — enhances with cross-project context when available
-- **Auto-Cleanup** — Stale done files purged after 7 days; max 3 active HANDOFF files per project
-- **Short-Session Gate** — Skips generation for trivial sessions
-
-## Installation
+## Quick Start
 
 ```bash
-# Unix/macOS
+# Install — one file, one directory
+# Unix / macOS
+mkdir -p ~/.claude/skills/handoff
 cp SKILL.md ~/.claude/skills/handoff/SKILL.md
 
 # Windows
+mkdir %USERPROFILE%\.claude\skills\handoff
 copy SKILL.md %USERPROFILE%\.claude\skills\handoff\SKILL.md
 ```
 
-## Usage
+That's it. No dependencies, no config, no setup. Just copy the file.
 
 ```bash
-/handoff           # Generate handoff + update project state
-/handoff status    # Quick project status
-/handoff timeline  # View development history
-/handoff doctor    # Health check
+# Write a handoff at the end of your session
+/handoff
+
+# Resume in a new session
+先读 HANDOFF
 ```
 
-**Resume from a handoff:** say "先读 HANDOFF" in a new session.
+📄 **[See a complete example](HANDOFF-example.ftmd)** — a realistic handoff showing all 9 sections in action.
+
+## Commands
+
+| Command | What it does | When to use |
+|---------|-------------|-------------|
+| `/handoff` | Generate HANDOFF + update PROJECT + run cleanup | End of a productive session |
+| `/handoff status` | One-line status: stage, progress, focus | Quick check — "where are we?" |
+| `/handoff timeline` | Decision Log + Failure Memory, oldest first | Understand how the project evolved |
+| `/handoff doctor` | Health check across 6 dimensions | Diagnose what's missing or stale |
+
+### What `/handoff` Actually Does
+
+1. **Short-Session Gate** — Skips generation if the session was trivial (no files changed, no decisions made, pure Q&A)
+2. **Verification Protocol** — Runs `git status`, `git diff`, re-reads referenced files, executes tests
+3. **Environment Capture** — Records OS, shell, Node, Python, Git, and Claude Code versions
+4. **Generates HANDOFF** — All 9 sections with evidence-tagged claims
+5. **Updates PROJECT** — Replaces Snapshot + Environment; appends new decisions and failures
+6. **Runs Cleanup** — Archives old `.done` files (7-day TTL), caps active HANDOFF files at 3
+
+## Key Features
+
+### 🔍 Verification Protocol — Nothing From Memory
+
+Every claim in a handoff is tagged:
+
+| Tag | Meaning |
+|-----|---------|
+| `[V]` | **Verified** — backed by a file, test output, or commit hash produced THIS session |
+| `[?]` | **Recalled** — from memory, not re-checked; treat as a lead, not a fact |
+
+Every `[V]` claim includes its evidence inline: the file path, line number, test name, or commit that proves it. The next session can independently verify. This is not convention — it's enforced by the generation protocol. **Claims without evidence are automatically downgraded to `[?]`.**
+
+```
+✅  Login redirect fixed [V] (AuthGuard.tsx:42, 7 tests pass in auth-guard.test.tsx)
+⚠️  Token refresh might need retry logic [?] — not verified this session
+```
+
+### 🧠 Degradation Detection — The Skill Watches Its Own Context
+
+Claude Code sessions have finite context windows. As the conversation grows long, the model starts to degrade — contradicting earlier decisions, re-deriving settled conclusions, forgetting what files contain.
+
+Handoff detects this **in real time**:
+- **Reactive:** Watches for contradictory statements, repeated failed approaches, stale file references
+- **Proactive:** At ~10 exchange milestones, checks whether meaningful work was done and suggests a handoff
+- **Polite:** Caps at 2 reactive + 3 proactive suggestions per session; respects consecutive declines
+
+### 🔄 Source-of-Truth Hierarchy
+
+When a handoff claim conflicts with reality, there's a clear resolution order:
+
+```
+1. Running code (what's on disk right now)
+2. Test output (what tests actually say)
+3. Project docs (README, spec, architecture)
+4. PROJECT.ftmd (accumulated project memory)
+5. HANDOFF.ftmd (current session snapshot)
+6. Older handoffs (archived .done files)
+```
+
+Conflicts are surfaced explicitly: *"PROJECT.ftmd says X, but code shows Y. Following the code."* — and PROJECT.ftmd is updated accordingly.
+
+### 🧹 Automatic Cleanup
+
+| Rule | Action |
+|------|--------|
+| **Read → done** | HANDOFF files are renamed to `.ftmd.done` after being read in a new session |
+| **Stale purge** | `.done` files older than 7 days are auto-deleted |
+| **Cap enforcement** | Maximum 3 active HANDOFF files per project — oldest gets purged |
+| **PROJECT.ftmd** | **Never auto-deleted.** It is the project's permanent memory. |
+
+### 🚦 Short-Session Gate
+
+Not every conversation needs a handoff. If ALL four criteria are met, Handoff asks before generating:
+
+| Gate | Criteria |
+|------|----------|
+| Topics | < 3 distinct user-initiated topics |
+| Output | No files created or modified |
+| Decisions | No architectural/technical decisions made |
+| Duration | Purely Q&A / information lookup |
+
+This prevents noise — only meaningful work produces handoffs.
+
+### Optional: claude-mem Integration
+
+Handoff is **completely self-contained** — zero external dependencies. If you also use [claude-mem](https://github.com/nanwulan/claude-mem), Handoff detects it automatically and enriches its output with cross-project context. No config needed; it just works.
+
+## The FTMD Format
+
+**Frictionless Transfer Markdown Document** — a format designed for one job: transferring project state between AI sessions with zero friction.
+
+### Design Constraints
+
+- **Human-readable** — plain Markdown, no tooling required to read or edit
+- **Git-diffable** — structural consistency makes `git diff` meaningful
+- **Zero-dependency** — no parser, no schema validator, no runtime
+- **Self-describing** — the filename IS the metadata (no YAML frontmatter)
+
+### PROJECT.ftmd — 5 Sections
+
+| # | Section | Update Rule | Content |
+|---|---------|-------------|---------|
+| 1 | **Snapshot** | Replaced each time | Stage, progress %, focus, last-updated date |
+| 2 | **Environment** | Replaced each time | OS, shell, language versions, workspace path |
+| 3 | **Decision Log** | Appended (newest first) | Dated entries: context → decision → why → rejected alternatives |
+| 4 | **Failure Memory** | Appended (newest first) | Dated entries: attempt → result → root cause → lesson |
+| 5 | **Open Questions** | Replaced each time | Currently unresolved questions with context |
+
+Sections 3–4 are capped at **30 entries each** — oldest is evicted when the cap is exceeded.
+
+### HANDOFF.ftmd — 9 Sections
+
+| # | Section | Answers |
+|---|---------|---------|
+| 1 | **Task** | What are we building? One paragraph of project context. |
+| 2 | **Completed** | What is done and verified. Each item has evidence. |
+| 3 | **Git Snapshot** | Branch, last commit, changed files (from live `git status` / `git diff --stat`). |
+| 4 | **Blocked** | 🔧 Technical blockers (symptom, hypothesis, file/line) + 👤 Decisions needed. |
+| 5 | **Next Steps** | Ordered, actionable. Each names a specific file or endpoint. |
+| 6 | **Pitfalls** | What went wrong → why → correct approach. Concrete, not vague. |
+| 7 | **Decisions** | This session's choices, their rationale, and what was rejected. |
+| 8 | **File Map** | Table: every relevant file path → what it does. |
+| 9 | **Startup Protocol** | Commands to run + ordered list of files to read first. |
 
 ## Design Philosophy
 
-Handoff is a **self-contained project memory layer**. It works perfectly on its own.
+### 1. Zero-Context Target Audience
 
-```
-Claude Code
-    ↓
-handoff (project state, decisions, lessons) ← self-contained
-    ↓
-Git (code history)
-    ↓
-Workspace (files)
-```
+Every sentence in a handoff must be understandable by someone who was not in the conversation. No "as we discussed," no "continuing from yesterday." The reader has amnesia — write accordingly.
 
-**Optional enhancement:**
-- **claude-mem** = cross-project knowledge that enriches handoff when available
+### 2. Evidence Over Memory
+
+The verification protocol exists because AI memory is unreliable. Claims without evidence are not claims — they're hints. The `[V]`/`[?]` system makes this explicit.
+
+### 3. Self-Contained by Default
+
+Handoff works perfectly with nothing but a SKILL.md file. Every integration point with external tools is guarded: *"If available... else skip silently."* No one should install Handoff and hit a missing-dependency error.
+
+### 4. Structured Over Prose
+
+Tables, not walls of text. Sections, not essays. A new session needs to scan, not read. Prose is reserved for context that genuinely defies tabulation.
+
+### 5. Decisions Carry Rationale
+
+Every decision records not just what was chosen, but **what was rejected and why**. This prevents re-litigation — the next session sees the rejected alternatives and doesn't re-propose them.
+
+### 6. Failures Are Assets
+
+Failure Memory is not a bug tracker — it's an institutional knowledge base. Each entry captures the full chain: attempt → result → root cause → lesson. The goal is to prevent the next session (or the next developer) from hitting the same wall.
+
+## Comparison
+
+| | `/handoff` | Git commit messages | README notes | Copied chat logs |
+|---|---|---|---|---|
+| **Structured sections** | ✅ 9 required | ❌ Free-form | ❌ Ad-hoc | ❌ Raw text |
+| **Evidence-tagged claims** | ✅ `[V]`/`[?]` | ❌ | ❌ | ❌ |
+| **Environment capture** | ✅ Auto | ❌ | ❌ | ❌ |
+| **Decision rationale** | ✅ With rejected alternatives | ⚠️ Sometimes | ❌ | ⚠️ Buried in conversation |
+| **Failure lessons** | ✅ Root-cause chain | ❌ | ❌ | ❌ |
+| **Auto-cleanup** | ✅ 7-day TTL + cap | ❌ | ❌ | ❌ |
+| **AI-optimized** | ✅ Purpose-built | ❌ | ❌ | ⚠️ Verbose, redundant |
+| **Git-diffable** | ✅ Structural consistency | ✅ | ❌ | ❌ |
 
 ## Compatibility
 
-### Skill (automated features)
+### Skill (Automated Features)
 
-The full `/handoff` experience — generation, environment capture, degradation detection, subcommands — requires **Claude Code** as the framework. Copy `SKILL.md` to `~/.claude/skills/handoff/` and it works. The underlying AI model (Claude, DeepSeek, GPT, etc.) does not matter — the skill has been tested and confirmed working on DeepSeek.
+The full `/handoff` experience — generation, verification, degradation detection, cleanup — requires **Claude Code** as the framework. Copy `SKILL.md` to `~/.claude/skills/handoff/` and it works. The underlying AI model does not matter — tested and confirmed working on Claude, DeepSeek, and others.
 
-| Framework | Skill works? |
-|-----------|:-----------:|
+| Framework | Works? |
+|-----------|:------:|
 | Claude Code | ✅ Full functionality |
 | Codex | ❌ Different skill system |
 | Cursor | ❌ Different skill system |
 | Copilot | ❌ Different skill system |
 
-### FTMD files (output)
+### FTMD Files (Output)
 
-The generated `PROJECT.ftmd` and `HANDOFF-*.ftmd` files are **plain Markdown**. Any AI tool can read them — just tell it "read PROJECT.ftmd first, then HANDOFF-*.ftmd". No special format, no lock-in.
+The generated `PROJECT.ftmd` and `HANDOFF-*.ftmd` files are **plain Markdown**. Any AI tool — Claude, ChatGPT, Gemini, Copilot — can read them. Just say:
 
-> **TL;DR:** Write with Claude Code. Read with anything.
+> "Read PROJECT.ftmd first, then HANDOFF-*.ftmd."
+
+No lock-in. No special format. Write with Claude Code, read with anything.
+
+## Real-World Workflow
+
+```bash
+# Session 1: Start a new feature
+$ /handoff                    # Creates PROJECT.ftmd + HANDOFF-2026-07-27.ftmd
+✅ 交接文档已保存。
+
+# Session 2: Pick up where you left off
+$ 先读 HANDOFF                # Reads PROJECT + latest HANDOFF
+📋 Project: my-app | Stage: Feature Dev | Progress: ~30%
+🔜 Next: Implement OAuth callback in src/auth/callback.ts
+# → Continues working immediately, no context re-establishment needed
+
+# Session 2 (later): Save progress
+$ /handoff                    # Updates PROJECT, generates new HANDOFF, archives old one
+
+# Any time: Quick check
+$ /handoff status             # One-line status
+$ /handoff doctor             # Full health check
+$ /handoff timeline           # See how decisions evolved
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the sync checklist and release process.
 
 ## License
 
-MIT
+MIT — use it, fork it, ship it. If you build something interesting on top of FTMD, open an issue — I'd love to see it.

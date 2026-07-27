@@ -364,6 +364,8 @@ Don't suggest more than 3 proactive checks per session.
 
 After HANDOFF is written, PROJECT is updated, and cleanup is done:
 
-**"✅ 交接文档已保存。建议开新会话继续——输入 `先读 HANDOFF` 即可无缝续接。"**
+> **✅ 交接文档已保存。下次新会话时说「先读 HANDOFF」即可无缝续接。**
+
+The exact phrase **"先读 HANDOFF"** is the canonical trigger. Teach your collaborators this phrase — it's the single command that turns a blank session into full project context.
 
 This closes the loop. Writing a handoff and then continuing in the same session defeats its purpose.

@@ -67,12 +67,14 @@ copy SKILL.md %USERPROFILE%\.claude\skills\handoff\SKILL.md
 That's it. No dependencies, no config, no setup. Just copy the file.
 
 ```bash
-# Write a handoff at the end of your session
+# End of session → save
 /handoff
 
-# Resume in a new session
+# New session → resume
 先读 HANDOFF
 ```
+
+> ⚡ **「先读 HANDOFF」** is the canonical trigger phrase. Say exactly these four characters at the start of any new session, and Claude will read PROJECT.ftmd + the latest HANDOFF, verify git state, spot-check claims, and pick up where you left off — no re-explaining, no lost context.
 
 📄 **[See a complete example](HANDOFF-example.ftmd)** — a realistic handoff showing all 9 sections in action.
 
@@ -262,24 +264,26 @@ No lock-in. No special format. Write with Claude Code, read with anything.
 ## Real-World Workflow
 
 ```bash
-# Session 1: Start a new feature
-$ /handoff                    # Creates PROJECT.ftmd + HANDOFF-2026-07-27.ftmd
-✅ 交接文档已保存。
+# Session 1: End of productive work
+$ /handoff
+✅ 交接文档已保存。下次新会话时说「先读 HANDOFF」即可无缝续接。
 
-# Session 2: Pick up where you left off
-$ 先读 HANDOFF                # Reads PROJECT + latest HANDOFF
+# Session 2: Start fresh — zero context
+$ 先读 HANDOFF
 📋 Project: my-app | Stage: Feature Dev | Progress: ~30%
 🔜 Next: Implement OAuth callback in src/auth/callback.ts
-# → Continues working immediately, no context re-establishment needed
+# → Claude immediately knows the project, picks up the work.
 
 # Session 2 (later): Save progress
 $ /handoff                    # Updates PROJECT, generates new HANDOFF, archives old one
 
-# Any time: Quick check
+# Any time: Quick checks
 $ /handoff status             # One-line status
 $ /handoff doctor             # Full health check
 $ /handoff timeline           # See how decisions evolved
 ```
+
+> 🔁 **The loop:** `/handoff` → 新会话 → `先读 HANDOFF` → 工作 → `/handoff` → 新会话 → `先读 HANDOFF` ... Each cycle accumulates project knowledge in PROJECT.ftmd while HANDOFF.ftmd carries the immediate baton.
 
 ## Contributing
 

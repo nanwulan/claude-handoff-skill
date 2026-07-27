@@ -1,6 +1,6 @@
 # /handoff — Claude Code Project State Management
 
-[![Version](https://img.shields.io/badge/version-v2.2.0-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
+[![Version](https://img.shields.io/badge/version-v2.3.0-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 > A Claude Code skill that maintains project state across sessions — so any fresh Claude session can pick up exactly where you left off, with full context.

@@ -1,6 +1,6 @@
 ---
 name: handoff
-description: Project State Management system. Use when the user says "/handoff", "写交接文档", "write handoff", "会话交接", "结束会话", "HANDOFF", or any subcommand (timeline/status/doctor)
+description: Project State Management system. Use when the user says "/handoff", "handoff", "写交接文档", "write handoff", "会话交接", "结束会话", "HANDOFF", "交接", or any subcommand (timeline/status/doctor), or wants to save/resume project context across sessions
 ---
 
 # Handoff V2 — Project State Management
@@ -66,7 +66,7 @@ This file lives at project root and is **never deleted**. Each `/handoff` update
 ## Decision Log
 ### 2026-07-26 — Use FTMD format over JSON/YAML
 - **Context:** Needed a structured handoff format.
-- **Decision:** Plain Markdown with 8-section convention.
+- **Decision:** Plain Markdown with 9-section convention.
 - **Why:** No tooling dependency, Git-diffable, human-readable.
 - **Rejected:** JSON (not readable), YAML (fragile indentation), SQLite (overkill).
 
@@ -85,7 +85,7 @@ This file lives at project root and is **never deleted**. Each `/handoff` update
 ### Update Rules
 
 **On every `/handoff`:**
-1. **Snapshot:** Replace. Reflect current reality (don't guess — verify against git status and file state).
+1. **Snapshot:** Replace. Reflect current reality — verify against file state (and git status, if this is a git repo). Don't guess.
 2. **Environment:** Replace. Re-run all capture commands fresh.
 3. **Decision Log:** Append only if this session made new decisions. Don't duplicate. **Cap: 30 entries max.** If exceeded, delete the oldest (bottom of file) before appending.
 4. **Failure Memory:** Append only if this session hit new pitfalls. Don't duplicate. **Cap: 30 entries max.** Same cleanup rule as Decision Log.
@@ -101,7 +101,7 @@ Generated fresh each `/handoff`. Nine required sections:
 |---|---------|---------|
 | 1 | **Task** | What are we building? One paragraph of project context. |
 | 2 | **Completed** | What is done and verified. Each item tagged `[V]` or `[?]`. |
-| 3 | **Git Snapshot** | Branch, last commit, changed files (from `git status` / `git diff --stat`). |
+| 3 | **Git Snapshot** | Branch, last commit, changed files (from `git status` / `git diff --stat`). If not a git repo, write "N/A — not a git repo". |
 | 4 | **Blocked** | Two categories: **🔧 Technical** (symptom, hypothesis, file/line) and **👤 Needs decision** (question for user). |
 | 5 | **Next Steps** | Ordered, actionable. Each names a specific file or endpoint. |
 | 6 | **Pitfalls** | What went wrong this session. Symptom → root cause → correct approach. |
@@ -120,7 +120,7 @@ Run these commands during `/handoff` generation. No user input needed.
 | OS | `uname -o` or `ver` |
 | Shell | `echo $SHELL` or `$SHELL --version` |
 | Node | `node --version` |
-| Python | `python --version` |
+| Python | `python3 --version` or `python --version` |
 | Git | `git --version` |
 | Claude Code | `claude --version` |
 | Package Manager | check for `package-lock.json` (npm), `yarn.lock`, `pnpm-lock.yaml` |
@@ -136,7 +136,7 @@ Generate HANDOFF + update PROJECT + run cleanup. This is the primary command. No
 
 **Step-by-step:**
 1. Run **Short-Session Gate** check. If all 4 criteria met, ask user before proceeding.
-2. Run **Verification Protocol** (git status, git diff, re-read files, run tests if available).
+2. Run **Verification Protocol** (git status/diff if available, re-read files, run tests if available).
 3. Collect **Environment** info via auto-capture commands.
 4. **Optional — claude-mem:** If claude-mem tools are available (see "Optional: claude-mem Integration"), search for this project's observations and cross-reference with claims. Add "From Memory (claude-mem)" bonus section to the HANDOFF. If NOT available: skip silently.
 5. Generate `HANDOFF-YYYY-MM-DD.ftmd` with all 9 sections.
@@ -169,7 +169,7 @@ Check project health. Report what's present and what's missing:
 | Latest HANDOFF | Exists? How old? |
 | Git repo | `git status` works? (Skip if not a git repo — mark "N/A") |
 | Environment | All fields captured? |
-| Tests | Test suite exists? Last run passed? |
+| Tests | Test suite exists? Last run passed? (Skip if none — mark "N/A") |
 | claude-mem | If available: recent observations for this project? If not: mark "N/A (not installed)" |
 
 Output as a checklist with ✅ / ⚠️ / ❌ markers. End with a one-line recommendation.
@@ -185,7 +185,7 @@ Output as a checklist with ✅ / ⚠️ / ❌ markers. End with a one-line recom
 **Tag every claim:**
 | Tag | Meaning |
 |-----|---------|
-| `[V]` | Verified against the repo during this handoff — trustworthy |
+| `[V]` | Verified against the project files during this handoff — trustworthy |
 | `[?]` | Recalled from memory, not re-checked — treat as a lead only |
 
 **Every `[V]` claim MUST include its evidence source.** Write it inline, not as a separate column. The evidence answers: "How would the next session verify this independently?"
@@ -194,7 +194,7 @@ Output as a checklist with ✅ / ⚠️ / ❌ markers. End with a one-line recom
 - ✅ Good: `Token expiry check added [V] (src/utils/token.ts:15, commit a1b2c3d)`
 - ❌ Bad: `Login redirect fixed [V]` — no evidence, untrustworthy
 
-If you can't name a file, test, or commit that proves the claim, downgrade it to `[?]`.
+If you can't name a file, test, or specific location that proves the claim, downgrade it to `[?]`.
 
 If verification fails (tests fail, unexpected git state, file deleted), don't abort. Tag affected claims `[?]` and add a **"Verification Notes"** bonus section.
 
@@ -249,11 +249,11 @@ Meeting just 1–2 is not enough to gate. All four must align.
 
 ## Save Location
 
-Determine in this order:
-1. Git root (`git rev-parse --show-toplevel`)
-2. Directory containing `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, etc.
-3. Current working directory — only if it looks like a project (has source/config files)
-4. **Fallback:** Current working directory (even if not a recognized project)
+Determine in this order — try each, if it fails or doesn't exist, move to the next:
+1. Git root (`git rev-parse --show-toplevel`) — if this is a git repo
+2. Directory containing `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, or similar project marker
+3. Current working directory — if it contains source files, config files, or looks like a project
+4. **Fallback:** Current working directory — always available, always writable
 
 **PROJECT.ftmd** → saved at the resolved project root (priority 1-3) or fallback directory (priority 4).
 
@@ -269,7 +269,7 @@ Apply on every `/handoff` invocation:
 |------|--------|
 | **Read → done** | After reading a HANDOFF in a new session, rename to `.ftmd.done` |
 | **Stale purge** | Delete `.done` files older than 7 days |
-| **HANDOFF count cap** | Keep at most **3** active HANDOFF `.ftmd` files per project. Delete oldest beyond cap. (Down from 5 in V1 — PROJECT.ftmd now carries the history) |
+| **HANDOFF count cap** | Keep at most **3** active HANDOFF `.ftmd` files per project. Delete oldest beyond cap. |
 | **PROJECT.ftmd** | **Never auto-deleted.** It is the project's long-term memory. |
 
 ## New Session Protocol
@@ -292,7 +292,7 @@ When triggered, read in this order:
 
 After reading PROJECT.ftmd and HANDOFF, execute these steps before doing any work:
 
-1. **Verify git state** — `git status`, `git log --oneline -3`. Does the branch and last commit match the HANDOFF's Git Snapshot? If not, note the discrepancy to the user.
+1. **Verify git state (if this is a git repo)** — `git status`, `git log --oneline -3`. Does the branch and last commit match the HANDOFF's Git Snapshot? If not, note the discrepancy. If not a git repo, skip this step.
 2. **Spot-check [V] claims** — pick 1–2 `[V]` claims from the Completed section, re-read the referenced file or re-run the referenced test. If evidence doesn't hold, downgrade mentally to `[?]`.
 3. **Confirm next step** — read the first item in Next Steps. State it to the user: "HANDOFF says the next step is X. Continue from here?"
 

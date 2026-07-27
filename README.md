@@ -90,7 +90,7 @@ That's it. No dependencies, no config, no setup. Just copy the file.
 ### What `/handoff` Actually Does
 
 1. **Short-Session Gate** — Skips generation if the session was trivial (no files changed, no decisions made, pure Q&A)
-2. **Verification Protocol** — Runs `git status`, `git diff`, re-reads referenced files, executes tests
+2. **Verification Protocol** — Runs `git status` and `git diff` (if available), re-reads referenced files, executes tests (if available)
 3. **Environment Capture** — Records OS, shell, Node, Python, Git, and Claude Code versions
 4. **Generates HANDOFF** — All 9 sections with evidence-tagged claims
 5. **Updates PROJECT** — Replaces Snapshot + Environment; appends new decisions and failures
@@ -104,10 +104,10 @@ Every claim in a handoff is tagged:
 
 | Tag | Meaning |
 |-----|---------|
-| `[V]` | **Verified** — backed by a file, test output, or commit hash produced THIS session |
+| `[V]` | **Verified** — backed by a file, test output, or specific location produced THIS session |
 | `[?]` | **Recalled** — from memory, not re-checked; treat as a lead, not a fact |
 
-Every `[V]` claim includes its evidence inline: the file path, line number, test name, or commit that proves it. The next session can independently verify. This is not convention — it's enforced by the generation protocol. **Claims without evidence are automatically downgraded to `[?]`.**
+Every `[V]` claim includes its evidence inline: the file path, line number, test name, or specific location that proves it. The next session can independently verify. This is not convention — it's enforced by the generation protocol. **Claims without evidence are automatically downgraded to `[?]`.**
 
 ```
 ✅  Login redirect fixed [V] (AuthGuard.tsx:42, 7 tests pass in auth-guard.test.tsx)
@@ -193,7 +193,7 @@ Sections 3–4 are capped at **30 entries each** — oldest is evicted when the 
 |---|---------|---------|
 | 1 | **Task** | What are we building? One paragraph of project context. |
 | 2 | **Completed** | What is done and verified. Each item has evidence. |
-| 3 | **Git Snapshot** | Branch, last commit, changed files (from live `git status` / `git diff --stat`). |
+| 3 | **Git Snapshot** | Branch, last commit, changed files (from live `git status` / `git diff --stat`). If not a git repo: "N/A — not a git repo". |
 | 4 | **Blocked** | 🔧 Technical blockers (symptom, hypothesis, file/line) + 👤 Decisions needed. |
 | 5 | **Next Steps** | Ordered, actionable. Each names a specific file or endpoint. |
 | 6 | **Pitfalls** | What went wrong → why → correct approach. Concrete, not vague. |

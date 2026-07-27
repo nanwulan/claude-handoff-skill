@@ -54,14 +54,14 @@ This file lives at project root and is **never deleted**. Each `/handoff` update
 ## Environment
 | Variable | Value |
 |----------|-------|
-| OS | Windows 11 |
-| Shell | bash (Git Bash) |
+| OS | Linux x86_64 (or Windows 11, macOS 15, etc.) |
+| Shell | bash 5.2 |
 | Node | v22.3.0 |
 | Python | 3.12.4 |
 | Git | 2.47.0 |
 | Claude Code | (from `claude --version`) |
 | Package Manager | npm 10.x |
-| Workspace | E:\projects\foo |
+| Workspace | /home/user/projects/my-app (or C:\Users\...\my-app) |
 
 ## Decision Log
 ### 2026-07-26 — Use FTMD format over JSON/YAML
@@ -95,7 +95,7 @@ This file lives at project root and is **never deleted**. Each `/handoff` update
 
 ## HANDOFF.ftmd — Session Snapshot
 
-Generated fresh each `/handoff`. Eight required sections:
+Generated fresh each `/handoff`. Nine required sections:
 
 | # | Section | Content |
 |---|---------|---------|
@@ -167,7 +167,7 @@ Check project health. Report what's present and what's missing:
 |-------|-----------|
 | PROJECT.ftmd | Exists? Has all 5 sections? |
 | Latest HANDOFF | Exists? How old? |
-| Git repo | `git status` works? Dirty working tree? |
+| Git repo | `git status` works? (Skip if not a git repo — mark "N/A") |
 | Environment | All fields captured? |
 | Tests | Test suite exists? Last run passed? |
 | claude-mem | If available: recent observations for this project? If not: mark "N/A (not installed)" |
@@ -178,9 +178,9 @@ Output as a checklist with ✅ / ⚠️ / ❌ markers. End with a one-line recom
 
 **Nothing goes in the handoff from memory alone.** Before writing:
 
-1. **Git reality check:** `git status`, `git log --oneline -5`, `git diff --stat`. Use diff output verbatim in Git Snapshot and File Map.
+1. **Git reality check (if available):** Run `git status`, `git log --oneline -5`, `git diff --stat`. Use diff output verbatim in Git Snapshot and File Map. If this is not a git repo, skip git verification — mark Git Snapshot as "N/A (not a git repo)" and proceed.
 2. **Re-read referenced files:** Every file the handoff mentions must be re-read during generation.
-3. **Re-run tests:** If the project has tests, run them. "Tests pass" is only written from output produced NOW.
+3. **Re-run tests (if available):** If the project has tests, run them. "Tests pass" is only written from output produced NOW. If no test suite exists, skip.
 
 **Tag every claim:**
 | Tag | Meaning |
@@ -253,11 +253,11 @@ Determine in this order:
 1. Git root (`git rev-parse --show-toplevel`)
 2. Directory containing `package.json`, `Cargo.toml`, `pyproject.toml`, `go.mod`, etc.
 3. Current working directory — only if it looks like a project (has source/config files)
-4. **Fallback:** `E:\projects\handoffs\`
+4. **Fallback:** Current working directory (even if not a recognized project)
 
 **PROJECT.ftmd** → saved at the resolved project root (priority 1-3) or fallback directory (priority 4).
 
-**HANDOFF-YYYY-MM-DD.ftmd** → same location as PROJECT.ftmd. If fallback directory, use topic slug: `HANDOFF-<topic-slug>-YYYY-MM-DD.ftmd`.
+**HANDOFF-YYYY-MM-DD.ftmd** → same location as PROJECT.ftmd. If saved to fallback directory (priority 4), use topic slug: `HANDOFF-<topic-slug>-YYYY-MM-DD.ftmd` to avoid filename collisions.
 
 Never save to `/tmp/` or Desktop.
 

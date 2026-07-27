@@ -1,16 +1,16 @@
 # Project: claude-handoff-skill
 
 ## Snapshot
-- **Stage:** Feature Development
-- **Progress:** ~90% — V2.3 hardened, fully self-contained, ready for first-time users
-- **Focus:** Zero-dependency out of the box — any Claude Code, any model, any platform
+- **Stage:** Review & Consolidation
+- **Progress:** ~90% — V2.3 externally reviewed (8.5/10), quality standards codified, next version roadmap defined
+- **Focus:** Lowering adoption barriers — not more features, simpler onboarding
 - **Updated:** 2026-07-27
 
 ## Environment
 | Variable | Value |
 |----------|-------|
 | OS | Windows 11 (Msys) |
-| Shell | bash (Git Bash, /usr/bin/bash) |
+| Shell | bash 5.3.9 (Git Bash, /bin/bash.exe) |
 | Node | v24.15.0 |
 | Python | 3.13.14 |
 | Git | 2.54.0 |
@@ -19,6 +19,30 @@
 | Workspace | C:\Users\MECHREV\Desktop\handoff |
 
 ## Decision Log
+### 2026-07-27 — GitHub push must be confirmation-gated
+- **Context:** 栋老师要求以后创建/修改 skill 时，GitHub 上传不能自动执行。
+- **Decision:** 本地改完 → 验证 → 问栋老师 → 同意 → 再 push。写入 7+1 清单第 ③ 步约束。
+- **Why:** 防止未经审查的代码上线。栋老师要最后把关。
+- **Rejected:** 自动推送（栋老师明确否定）。
+
+### 2026-07-27 — FTMD external name: "AI Agent Context Transfer Format"
+- **Context:** 栋老师评审指出 "Frictionless Transfer Markdown Document" 名字不错但不利于传播。用户第一次看到 .ftmd 不知道是什么。
+- **Decision:** README 保留原名，增加 "AI Agent Context Transfer Format" 作为对外传播名称。
+- **Why:** 原名精确但传播力弱；新名告诉用户这是什么（AI Agent）、做什么（Context Transfer）、什么格式（Format）。三个词各司其职。
+- **Rejected:** 完全改名（破坏已有认知）、只保留原名（栋老师说"别人不知道是什么"）。
+
+### 2026-07-27 — V2.4 strategy: zero-risk only, defer major features
+- **Context:** 栋老师评审给出 5 个优先级功能（自动 SessionStart、Handoff diff、Git commit 集成等），但 V2.3 刚稳定。
+- **Decision:** 本次只做一行改动（README FTMD 名字）。自动 SessionStart 等实现路径想透后再动手。
+- **Why:** V2.3 经过 3 轮审计才稳，马上大改容易引入新 bug。栋老师说"按你的来"确认此策略。
+- **Rejected:** 趁热打铁堆功能（违反栋老师"降低门槛而非堆功能"核心建议）。
+
+### 2026-07-27 — 栋老师评审记录为 claude-mem 而非 PROJECT.ftmd
+- **Context:** 栋老师给了 Handoff V2.3 完整评审（8.5/10，5 问题 + 5 优先级），需要持久化。
+- **Decision:** 评审元认知（质量标准、路线图、评分）写入 claude-mem（跨 session 长期记忆）；PROJECT.ftmd 只记本项目具体的决策和失败。
+- **Why:** Data boundary——跨 session 的准则归 claude-mem，项目级的决策归 PROJECT.ftmd。评审是"如何开发 skill"的准则，不是 handoff 项目本身的架构决策。
+- **Rejected:** 全部塞进 PROJECT.ftmd（污染项目级记忆，让 Decision Log 变成杂货铺）。
+
 ### 2026-07-27 — Zero-dependency hardening: 3 audit rounds, 17 fixes
 - **Context:** 栋老师要求确保新用户（刚装 Claude Code、无其他 skill、任意模型、任意平台）能完美运行 Handoff。
 - **Decision:** 3 轮逐行审计，修了 17 处隐式依赖——硬编码路径、非 git 项目 guard、python vs python3、OS 中立示例、8→9 sections 计数错误。
@@ -63,5 +87,9 @@
 - **Lesson:** Added "grep old version numbers across all .md files" as the +1 step. Badge URL is the most frequently missed item.
 
 ## Open Questions
+- Q: V2.4 何时启动？栋老师说"先沉淀"，实现路径想透再动手
+- Q: 自动 SessionStart 走哪条路径？CLAUDE.md 模板 vs install 脚本 vs 等 Claude Code 原生 hook？
+- Q: 是否需要 PROJECT.md（人类摘要层）与 PROJECT.ftmd（AI 用）分离？
+- Q: 跨模型协议——PROJECT.ftmd 是否增加 Agent History（Provider / Model / Purpose）？
 - Q: Test Handoff on a clean install (fresh Claude Code, no skills, no claude-mem) on all 3 platforms? → simulated in audit but not physically verified
 - Q: Add test suite for the skill itself? → deferred from V2.1, still pending

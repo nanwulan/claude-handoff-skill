@@ -10,7 +10,7 @@ dones = glob.glob(done_pattern)
 if handoffs:
     latest = max(handoffs, key=os.path.getmtime)
     name = os.path.basename(latest)
-    msg = f"📝 检测到交接文档 {name}。要不要先读 HANDOFF？"
+    msg = f"📝 检测到交接文档 {name}。这是未读的交接文档，直接加载继续工作。"
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",

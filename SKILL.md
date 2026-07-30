@@ -278,22 +278,23 @@ Two triggers activate this protocol:
 
 | Trigger | Source | Action |
 |---------|--------|--------|
-| **Auto-detect** | SessionStart hook `additionalContext` | Model sees HANDOFF signal → asks user before reading ("📝 检测到交接文档 xxx.ftmd。要不要先读 HANDOFF？") |
+| **Auto-detect (unread)** | SessionStart hook detects `HANDOFF-*.ftmd` (not `.done`) | Model reads immediately — unread HANDOFF means the user wants to continue. No need to ask. |
+| **Auto-detect (archived)** | SessionStart hook detects only `.ftmd.done` files | Model asks: "📝 上次的交接文档已归档。要不要看看最近的项目状态？" |
 | **Manual** | User says "先读 HANDOFF" (canonical resume command) | Read immediately without asking |
 
-### Step 0 — Ask First (Auto-Detect Only)
+### Step 0 — Auto-Read (Unread HANDOFF)
 
-When the SessionStart hook injects a HANDOFF detection message via `additionalContext`, the model MUST **ask the user before reading anything**. The hook's signal is just that — a signal. It is NOT a command to auto-read.
+When the SessionStart hook detects an unread HANDOFF (`HANDOFF-*.ftmd`, not `.done`), the model **reads it immediately without asking**. The presence of an unread HANDOFF is itself the user's intent signal — they opened a new session to continue where they left off. Asking "要不要先读？" is unnecessary friction.
 
-> "栋老师，检测到交接文档 `HANDOFF-2026-07-30.ftmd`。要不要先读？"
+> 模型看到信号后直接执行 Step 1，无需等待用户确认。
 
-Wait for user confirmation before proceeding to Step 1.
+When the hook detects only archived files (`.ftmd.done`), the model asks first — the user may not want to revisit old state.
 
-**Rationale:** `additionalContext` goes to the model, not the terminal. The user may not have seen any prompt. Auto-reading without asking robs the user of control — they might be starting a fresh, unrelated task.
+**Rationale:** Unread HANDOFF = continuation intent. The user wrote it last session, didn't mark it done, and opened a new session. Every extra click between them and resuming work is friction with no benefit.
 
 ### Step 1 — Read
 
-When triggered (auto-detect confirmed OR manual "先读 HANDOFF"), read in this order:
+When triggered (auto-detect OR manual "先读 HANDOFF"), read in this order:
 
 1. **PROJECT.ftmd** first — understand the project's identity, history, environment
 2. **Latest HANDOFF-*.ftmd** (without `.done`) — get the current task state and next steps
@@ -361,7 +362,8 @@ Don't suggest more than 3 proactive checks per session.
 | `/handoff status` | One-line project status from PROJECT.ftmd |
 | `/handoff doctor` | Health check: PROJECT, HANDOFF, Git, Env, Tests |
 | `先读 HANDOFF` (new session, manual) | Read PROJECT.ftmd → read latest HANDOFF → summarize |
-| Auto-detect (SessionStart hook) | Ask user first → if confirmed, same as manual flow |
+| Auto-detect unread (SessionStart hook) | Read immediately — unread HANDOFF = continuation intent |
+| Auto-detect archived (SessionStart hook) | Ask user first → if confirmed, read archived state |
 | Context rot detected | Suggest `/handoff` (max 2x/session) |
 | ~10th exchange milestone | Suggest `/handoff` (max 3x/session) |
 
@@ -379,15 +381,15 @@ Don't suggest more than 3 proactive checks per session.
 | Skipping PROJECT.ftmd update | HANDOFF alone isn't enough — decisions and failures must go to PROJECT.ftmd |
 | Duplicating Decision Log entries | Check PROJECT.ftmd before appending |
 | Deleting PROJECT.ftmd | It is the project's long-term memory — never auto-delete |
-| Auto-reading HANDOFF without asking | When hook auto-detects, model must ask user first before reading. additionalContext is a signal, not a command. |
+| Asking "要不要先读？" when unread HANDOFF exists | Unread HANDOFF = continuation intent. Auto-read immediately, don't ask. Only ask when all HANDOFFs are `.done`. |
 
 ## Post-Generation
 
 After HANDOFF is written, PROJECT is updated, and cleanup is done:
 
-> **✅ 交接文档已保存。下次新会话时说「先读 HANDOFF」即可无缝续接。**
+> **✅ 交接文档已保存。下次新会话时自动加载继续工作，或说「先读 HANDOFF」手动触发。**
 
-The exact phrase **"先读 HANDOFF"** is the canonical trigger. Teach your collaborators this phrase — it's the single command that turns a blank session into full project context.
+The exact phrase **"先读 HANDOFF"** is the manual trigger. But normally you won't need it — when you open a new session and an unread HANDOFF exists, the model auto-reads it immediately.
 
 This closes the loop. Writing a handoff and then continuing in the same session defeats its purpose.
 
@@ -395,13 +397,13 @@ This closes the loop. Writing a handoff and then continuing in the same session 
 
 After the closing message above, **always** check: does the user already have the SessionStart auto-reminder configured? If not, add one line:
 
-> 💡 要不要我帮你配置自动提醒？以后每次新会话开头会自动问「要不要先读 HANDOFF」，不用你手动说。跑一次 `python install_reminder.py` 就行。
+> 💡 要不要我帮你配置自动提醒？以后每次新会话开头会自动加载未读的交接文档，无缝续接。跑一次 `python install_reminder.py` 就行。
 
 If they say yes, run the script for them. If they decline, don't mention it again this session.
 
 ## Auto-Reminder (SessionStart Hook)
 
-Want Claude Code to proactively ask "要不要先读 HANDOFF?" at the start of every session?
+Want Claude Code to auto-load handoff documents at the start of every session?
 
 ### Quick install
 
@@ -450,10 +452,10 @@ On Windows, use the absolute Python interpreter path:
 
 ### How it works
 
-The hook runs at SessionStart, detects HANDOFF files, and injects a signal into the model's context via `additionalContext` (stdout JSON). The model then asks the user whether to read the handoff.
+The hook runs at SessionStart, detects HANDOFF files, and injects a signal into the model's context via `additionalContext` (stdout JSON). The model then auto-reads unread handoffs or asks about archived ones.
 
-- If a `HANDOFF-*.ftmd` exists → model sees: "📝 检测到交接文档 xxx.ftmd。要不要先读 HANDOFF？" → model asks user
-- If only archived `.done` files exist → model sees hint about past handoffs → model mentions availability
+- If an unread `HANDOFF-*.ftmd` exists → model sees signal → auto-reads immediately without asking
+- If only archived `.done` files exist → model sees hint about past handoffs → asks user if they want to review
 - If no handoff files at all → silent (no interruption)
 
 **Design note:** The hook does NOT output to stderr. Claude Code hook protocol (exit 0) does not display stderr to the terminal — only `additionalContext` reaches the model. The model is responsible for relaying the prompt to the user.

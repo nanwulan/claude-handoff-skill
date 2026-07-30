@@ -1,10 +1,10 @@
 # Project: claude-handoff-skill
 
 ## Snapshot
-- **Stage:** Review & Consolidation
-- **Progress:** ~90% — V2.3 externally reviewed (8.5/10), quality standards codified, next version roadmap defined
-- **Focus:** Lowering adoption barriers — not more features, simpler onboarding
-- **Updated:** 2026-07-27
+- **Stage:** Polish & Usability
+- **Progress:** ~95% — SessionStart hook integrated, auto-read protocol live (v2.5.0), stderr dead-end resolved
+- **Focus:** Unread HANDOFF auto-read — no more asking, friction eliminated
+- **Updated:** 2026-07-30
 
 ## Environment
 | Variable | Value |
@@ -19,6 +19,18 @@
 | Workspace | C:\Users\MECHREV\Desktop\handoff |
 
 ## Decision Log
+### 2026-07-30 — 未读 HANDOFF 自动加载，不再询问用户
+- **Context:** SessionStart hook 检测到未读 HANDOFF 时，模型会问「要不要先读？」栋老师反馈：新会话 + 未读 HANDOFF 本身就是续接意图，多问一句是多余摩擦。
+- **Decision:** 未读 HANDOFF（`*.ftmd`，非 `.done`）→ 模型直接读取，不询问。仅有 `.done` 归档文件时 → 轻问一句。
+- **Why:** 减少无意义确认。用户写了 HANDOFF、没标 done、开了新会话 —— 三个信号叠加就是「我要继续」。询问变成纯摩擦。
+- **Rejected:** 保持先问（已证实是多余步骤）；全部静默（.done 场景用户可能确实需要提醒）。
+
+### 2026-07-30 — 废弃 stderr 输出方案，改为模型侧"先问再读"（已被本日后续决策覆盖）
+- **Context:** Session 4 花了一个会话修 stderr 缓冲，Session 5 发现 exit 0 时 stderr 根本不显示。
+- **Decision:** `handoff_reminder.py` 移除所有 stderr 输出，只保留 stdout JSON。SKILL.md 新增 Step 0 规范模型行为。
+- **Why:** Hook 职责 = 检测 + 注入信号；模型职责 = 询问 + 执行。
+- **Note:** 本决策的"先问"部分已被同日后续决策覆盖（改为未读直接加载），但 stderr 废弃和职责分离的原则仍然有效。
+
 ### 2026-07-27 — GitHub rule refined: new skill asks, updates auto-push
 - **Context:** 栋老师纠正——我之前把 GitHub 确认门理解成"所有情况都要问"，实际规则是分两种。
 - **Decision:** **新建 skill** → 先问栋老师要不要上传，确认后再创建仓库并推送。**更新已有 skill** → 本地验证完直接 push，不用问。
@@ -93,9 +105,9 @@
 - **Lesson:** Added "grep old version numbers across all .md files" as the +1 step. Badge URL is the most frequently missed item.
 
 ## Open Questions
+- ~~Q: 重启 Claude Code 后，新会话中模型是否按 Step 0 协议先询问再读 HANDOFF？~~ → 已验证（2026-07-30），且策略已升级为「未读直接加载」
 - Q: V2.4 何时启动？栋老师说"先沉淀"，实现路径想透再动手
-- Q: 自动 SessionStart 走哪条路径？CLAUDE.md 模板 vs install 脚本 vs 等 Claude Code 原生 hook？
 - Q: 是否需要 PROJECT.md（人类摘要层）与 PROJECT.ftmd（AI 用）分离？
 - Q: 跨模型协议——PROJECT.ftmd 是否增加 Agent History（Provider / Model / Purpose）？
-- Q: Test Handoff on a clean install (fresh Claude Code, no skills, no claude-mem) on all 3 platforms? → simulated in audit but not physically verified
-- Q: Add test suite for the skill itself? → deferred from V2.1, still pending
+- Q: Test Handoff on a clean install (fresh Claude Code, no skills, no claude-mem) on all 3 platforms?
+- Q: Add test suite for the skill itself?

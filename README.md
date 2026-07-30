@@ -1,6 +1,6 @@
 # /handoff — Project State Management for Claude Code
 
-[![Version](https://img.shields.io/badge/version-v2.4.0-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
+[![Version](https://img.shields.io/badge/version-v2.5.0-blue)](https://github.com/nanwulan/claude-handoff-skill/releases)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Format](https://img.shields.io/badge/format-FTMD-orange)](#the-ftmd-format)
 [![Dependencies](https://img.shields.io/badge/dependencies-zero-brightgreen)](#design-philosophy)

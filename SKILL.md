@@ -374,9 +374,17 @@ This closes the loop. Writing a handoff and then continuing in the same session 
 
 ## Auto-Reminder (SessionStart Hook)
 
-Want Claude Code to proactively ask "要不要先读 HANDOFF?" at the start of every session? Add a SessionStart hook:
+Want Claude Code to proactively ask "要不要先读 HANDOFF?" at the start of every session?
 
-### 1. Install the hook script
+### Quick install
+
+```bash
+python install_reminder.py
+```
+
+Does everything below in one command. Restart Claude Code to activate.
+
+### Manual setup
 
 Copy `handoff_reminder.py` to a permanent location:
 

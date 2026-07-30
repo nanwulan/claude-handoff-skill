@@ -371,3 +371,51 @@ After HANDOFF is written, PROJECT is updated, and cleanup is done:
 The exact phrase **"先读 HANDOFF"** is the canonical trigger. Teach your collaborators this phrase — it's the single command that turns a blank session into full project context.
 
 This closes the loop. Writing a handoff and then continuing in the same session defeats its purpose.
+
+## Auto-Reminder (SessionStart Hook)
+
+Want Claude Code to proactively ask "要不要先读 HANDOFF?" at the start of every session? Add a SessionStart hook:
+
+### 1. Install the hook script
+
+Copy `handoff_reminder.py` to a permanent location:
+
+```bash
+cp handoff_reminder.py /path/to/your/hooks/
+```
+
+### 2. Configure settings.json
+
+Add to your `~/.claude/settings.json`:
+
+```json
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3",
+            "args": ["/absolute/path/to/handoff_reminder.py"]
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+On Windows, use the absolute Python interpreter path:
+
+```json
+"command": "C:\\Users\\<user>\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
+```
+
+### How it works
+
+- If a `HANDOFF-*.ftmd` exists → 📝 "检测到交接文档 xxx.ftmd。要不要先读 HANDOFF？"
+- If only archived `.done` files exist → hints that previous handoffs are available
+- If no handoff files at all → silent (no interruption)
+
+The hook is zero-maintenance — set once, works forever.

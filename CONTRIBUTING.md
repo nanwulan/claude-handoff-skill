@@ -37,7 +37,7 @@ This is a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/ski
 
 ## Convention
 
-- **「先读 HANDOFF」** is the canonical trigger phrase for resuming any session. Every `/handoff` ends with this reminder. When contributing to the skill, preserve and reinforce this convention.
+- **Auto-resume is the default.** When an unread HANDOFF exists at session start, Claude loads it immediately — no trigger phrase needed. Want to manually resume? Say **「先读 HANDOFF」**. Every `/handoff` post-generation message reinforces this: "下次新会话时自动加载继续工作，或说「先读 HANDOFF」手动触发。"
 - The dual-file model (`PROJECT.ftmd` persistent / `HANDOFF-*.ftmd` disposable) is the architectural invariant. Don't propose merging them.
 
 ## What Makes a Good Contribution

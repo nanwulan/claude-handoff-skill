@@ -301,4 +301,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for the sync checklist and release proces
 
 ## License
 
-MIT — use it, fork it, ship it. If you build something interesting on top of FTMD, open an issue — I'd love to see it.
+MIT © [nanwulan](https://github.com/nanwulan) — use it, fork it, ship it.

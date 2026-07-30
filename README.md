@@ -70,21 +70,20 @@ That's it. No dependencies, no config, no setup. Just copy the file.
 # End of session → save
 /handoff
 
-# New session → resume
-先读 HANDOFF
+# New session → auto-resume (no need to say anything!)
 ```
 
-> ⚡ **「先读 HANDOFF」** is the canonical trigger phrase. Say exactly these four characters at the start of any new session, and Claude will read PROJECT.ftmd + the latest HANDOFF, verify git state, spot-check claims, and pick up where you left off — no re-explaining, no lost context.
+> ⚡ **Auto-resume by default.** When you open a new session and an unread HANDOFF exists, Claude reads it immediately — no trigger phrase needed. Want to manually resume? Say **「先读 HANDOFF」** and Claude will load PROJECT.ftmd + the latest HANDOFF, verify git state, spot-check claims, and pick up where you left off.
 
-### 🔔 Auto-Reminder — Don't Remember to Say It
+### 🔔 Auto-Reminder — Zero-Friction Resume
 
-Tired of forgetting to say "先读 HANDOFF"? Let Claude ask you instead:
+Make it fully automatic — Claude detects unread handoffs at session start and loads them instantly:
 
 ```bash
 python install_reminder.py
 ```
 
-One command. Restart Claude Code. Every new session starts with a friendly reminder — no memorization required.
+One command. Restart Claude Code. Every new session auto-loads your handoff context — nothing to remember, nothing to type.
 
 > 💡 If you installed via AI, your Claude will offer to set this up for you after the first `/handoff`.
 
@@ -278,13 +277,12 @@ No lock-in. No special format. Write with Claude Code, read with anything.
 ```bash
 # Session 1: End of productive work
 $ /handoff
-✅ 交接文档已保存。下次新会话时说「先读 HANDOFF」即可无缝续接。
+✅ 交接文档已保存。下次新会话时自动加载继续工作。
 
-# Session 2: Start fresh — zero context
-$ 先读 HANDOFF
+# Session 2: Start fresh — zero context (auto-resume!)
 📋 Project: my-app | Stage: Feature Dev | Progress: ~30%
 🔜 Next: Implement OAuth callback in src/auth/callback.ts
-# → Claude immediately knows the project, picks up the work.
+# → Claude auto-detects the handoff and picks up immediately. No trigger phrase needed.
 
 # Session 2 (later): Save progress
 $ /handoff                    # Updates PROJECT, generates new HANDOFF, archives old one
@@ -295,7 +293,7 @@ $ /handoff doctor             # Full health check
 $ /handoff timeline           # See how decisions evolved
 ```
 
-> 🔁 **The loop:** `/handoff` → 新会话 → `先读 HANDOFF` → 工作 → `/handoff` → 新会话 → `先读 HANDOFF` ... Each cycle accumulates project knowledge in PROJECT.ftmd while HANDOFF.ftmd carries the immediate baton.
+> 🔁 **The loop:** `/handoff` → 新会话（自动加载）→ 工作 → `/handoff` → 新会话（自动加载）... Each cycle accumulates project knowledge in PROJECT.ftmd while HANDOFF.ftmd carries the immediate baton.
 
 ## Contributing
 

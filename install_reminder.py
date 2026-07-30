@@ -84,7 +84,7 @@ def install():
         encoding="utf-8",
     )
     print("✅ SessionStart hook 已配置\n")
-    print("重启 Claude Code 即可生效。每次新会话会自动提醒「要不要先读 HANDOFF？」")
+    print("重启 Claude Code 即可生效。每次新会话会自动加载未读的交接文档。")
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ This is a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/ski
 | `SKILL.md` | The skill itself — all instructions for Claude Code |
 | `README.md` | Human-facing documentation |
 | `HANDOFF-example.ftmd` | Example of the 9-section handoff format |
-| `PROJECT.ftmd` | The skill's own long-term memory — our dogfood |
+| `PROJECT.ftmd` | The skill's own long-term memory — dogfooding itself |
 | `CONTRIBUTING.md` | This file |
 
 ## How to Contribute
@@ -27,7 +27,7 @@ This is a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/ski
 | # | Location | Action |
 |---|----------|--------|
 | 1 | `.claude/skills/handoff/SKILL.md` | Edit the primary file |
-| 2 | `Desktop/handoff/SKILL.md` | `cp` sync, `diff` confirm |
+| 2 | Local mirror (if applicable) | `cp` sync, `diff` confirm — keep all copies in lockstep |
 | 3 | `README.md` | Version badge, architecture diagram, key features, compatibility |
 | 4 | `HANDOFF-example.ftmd` | Does it match current section structure? |
 | 5 | `CONTRIBUTING.md` | File list, design principles still accurate? |
@@ -58,4 +58,4 @@ This is a [Claude Code skill](https://docs.anthropic.com/en/docs/claude-code/ski
 5. **Decisions carry rationale** — rejected alternatives are as important as the choice
 6. **Failures are assets** — each pitfall records the full chain: attempt → result → root cause → lesson
 
-These principles are also documented in `PROJECT.ftmd` (Decision Log) — our own handoff system dogfoods itself.
+These principles are also documented in `PROJECT.ftmd` (Decision Log) — the handoff system dogfoods itself.

@@ -4,7 +4,7 @@
 - **Stage:** Polish & Usability
 - **Progress:** ~95% — SessionStart hook integrated, auto-read protocol live (v2.5.0), stderr dead-end resolved
 - **Focus:** Unread HANDOFF auto-read — no more asking, friction eliminated
-- **Updated:** 2026-07-30
+- **Updated:** 2026-07-30 (Session 6)
 
 ## Environment
 | Variable | Value |
@@ -98,6 +98,12 @@
 - **Rejected:** Auto-sync script (too rigid, some steps need human judgment).
 
 ## Failure Memory
+### 2026-07-30 (Session 6) — 版本徽章再次遗漏（与 V2.3 完全相同）
+- **Attempt:** v2.5.0 发布后，栋老师逐项审查发现版本徽章仍是 v2.4.0。
+- **Result:** 与 V2.3 发布时完全相同的错误。+1 步骤以"没改版本号"为由跳过，实则 v2.4.0 → v2.5.0 就是改版本号。
+- **Root cause:** 记忆驱动不可靠。Failure Memory 记录了教训但不能阻止重犯。
+- **Lesson:** 7+1 清单从记忆驱动改为可视化执行——先把清单列出来，逐条打勾。+1 永不跳过。
+
 ### 2026-07-27 — Version badge not updated during V2.3 release
 - **Attempt:** Committed V2.3 changes, pushed tag, created release — but README badge still said v2.2.0.
 - **Result:** Badge and release tag mismatched until栋老师 asked for final check.

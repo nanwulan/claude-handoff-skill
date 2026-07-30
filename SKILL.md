@@ -372,6 +372,14 @@ The exact phrase **"先读 HANDOFF"** is the canonical trigger. Teach your colla
 
 This closes the loop. Writing a handoff and then continuing in the same session defeats its purpose.
 
+### Proactive reminder setup
+
+After the closing message above, **always** check: does the user already have the SessionStart auto-reminder configured? If not, add one line:
+
+> 💡 要不要我帮你配置自动提醒？以后每次新会话开头会自动问「要不要先读 HANDOFF」，不用你手动说。跑一次 `python install_reminder.py` 就行。
+
+If they say yes, run the script for them. If they decline, don't mention it again this session.
+
 ## Auto-Reminder (SessionStart Hook)
 
 Want Claude Code to proactively ask "要不要先读 HANDOFF?" at the start of every session?

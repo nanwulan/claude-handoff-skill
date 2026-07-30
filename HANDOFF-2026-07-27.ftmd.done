@@ -1,0 +1,119 @@
+# HANDOFF — Handoff Skill V2.3 全面加固：零依赖 + Canonical Trigger + 专业 README
+
+> Zero-context handoff for the next AI session.
+> Generated: 2026-07-27 · Session length: ~40 substantive exchanges
+
+---
+
+## 1. Task
+
+将 Handoff Skill 打磨到**新用户开箱即用**：刚装好 Claude Code、无任何 skill、无 claude-mem、任意底层模型、任意平台，`/handoff` 零报错。同时建立「先读 HANDOFF」canonical trigger 约定，把 GitHub README 重写为专业级项目文档。
+
+---
+
+## 2. Completed
+
+| # | 改动 | 详情 |
+|---|------|------|
+| 1 `[V]` | README 专业重写 | ~295 行 — Hero section、Problem/Solution 叙事、ASCII 架构图、5 badge、Comparison 矩阵（8 维度 vs 4 方案）、Design Philosophy 6 条、Real-World Workflow + 🔁 loop 总结（README.md, commits c0bdaa1→05f9b4b） |
+| 2 `[V]` | Canonical trigger 约定 | 「先读 HANDOFF」固化在 6 处：Post-Generation、New Session Protocol、Quick Reference、README（Quick Start callout + Workflow loop）、CONTRIBUTING Convention、GitHub repo description（SKILL.md, commits 4e882c1, 00d41c0） |
+| 3 `[V]` | 零依赖审计 — 第一轮 | 修 5 处：硬编码回退路径 `E:\projects\handoffs\` → `pwd`、OS 示例中立化、Verification Protocol git guard、doctor Git guard、8→9 sections 计数（SKILL.md, commit 9d8c39f） |
+| 4 `[V]` | 零依赖审计 — 第二轮 | 修 7 处：示例 8→9 section、Snapshot update git guard、`/handoff` step 2 括号、doctor Tests N/A guard、`[V]` 定义 "repo"→"project files"、V1 噪音删除、Recovery Protocol git guard（SKILL.md, commit c4524d5） |
+| 5 `[V]` | 零依赖审计 — 第三轮 | 修 4 处：python→python3 双检测、Save Location fall-through 逻辑、HANDOFF Git Snapshot section N/A 说明、触发词 description 扩展（SKILL.md, commit c4524d5） |
+| 6 `[V]` | README 跨文件对齐 | 4 处修正：What /handoff does git guard、`[V]` 定义 commit→location、证据描述、Git Snapshot N/A（README.md, commit 05f9b4b） |
+| 7 `[V]` | CONTRIBUTING.md 重写 | 新增 Files 表（含 PROJECT.ftmd）、7+1 同步清单、Convention 节（「先读 HANDOFF」）、Design Principles 6 条 → 43 行专业贡献指南（commit 00d41c0） |
+| 8 `[V]` | Repo description 升级 | `gh repo edit --description` → 功能全景 + 「先读 HANDOFF」触发词（线上已生效） |
+| 9 `[V]` | PROJECT.ftmd 更新 | Snapshot→~90%、追加 3 条 Decision Log、更新 Open Questions |
+| 10 `[V]` | 全量同步 | `.claude/skills/handoff/SKILL.md` `diff` 确认一致；grep 版本号仅 v2.3.0 一处 |
+
+---
+
+## 3. Git Snapshot
+
+```
+Branch:   master
+Last commit: d306593 Update PROJECT.ftmd: new decisions, snapshot ~90%, refresh open questions
+Today's commits (7):
+  d306593 Update PROJECT.ftmd
+  05f9b4b Cross-file audit: README alignment
+  c4524d5 Second audit: 7 fixes
+  9d8c39f Zero-dependency audit: 5 fixes
+  00d41c0 Canonical trigger + CONTRIBUTING + repo description
+  4e882c1 Canonicalize「先读 HANDOFF」
+  c0bdaa1 Rewrite README: professional depth
+Changed files:
+  SKILL.md        +56/-56  (17 fixes across 3 audit rounds)
+  README.md       +334/-119 (full rewrite)
+  CONTRIBUTING.md +41/-6   (rewrite)
+  PROJECT.ftmd    +49      (new decisions + snapshot update)
+  Total: 4 files, +361/-119 lines
+```
+
+---
+
+## 4. Blocked
+
+### 🔧 Technical
+
+无。
+
+### 👤 Needs Decision
+
+无。
+
+---
+
+## 5. Next Steps
+
+| 顺序 | 行动 | 说明 |
+|------|------|------|
+| 1 | 物理测试：全新 Claude Code 安装 → 下载 SKILL.md → `/handoff` → 确认零报错 | 目前只在逻辑模拟中验证，需要真机测试 |
+| 2 | 观察 GitHub 反馈 | 新 README 对路人是否有吸引力？issue/star 变化 |
+| 3 | 考虑 V2.4 或 V3.0 | 如果有实质性的新需求出现 |
+
+---
+
+## 6. Pitfalls
+
+| # | 发生了什么 | 为什么 | 正确做法 |
+|---|-----------|--------|----------|
+| 1 | 第一次审计后栋老师说"你又忘了同步" | 改完 SKILL.md 习惯性只 commit+push，跳过了 7+1 清单 | **改 skill = 改所有地方。** 同步不是事后善后，是改动的一部分 |
+| 2 | 审计两轮后仍有遗漏（python3、fall-through、N/A） | 第一轮关注显式依赖（路径、git），第二轮才覆盖隐式依赖（python3、fall-through 逻辑、section N/A） | 多轮逐行审计，每轮换一个角度：新用户模拟 → 跨平台模拟 → 跨模型模拟 |
+| 3 | README 和 SKILL.md 措辞不一致 | 两个文件独立编辑，没有交叉校对 | 审计时把 README 和 SKILL.md 放在一起逐行对照 |
+
+---
+
+## 7. Decisions
+
+| 决策 | 理由 | 否决的替代方案 |
+|------|------|---------------|
+| **3 轮渐进式审计** | 每轮换角度（路径→命令→跨文件），比一轮穷举更彻底 | 一轮全量审计（太容易漏，人类注意力有限） |
+| **「先读 HANDOFF」six-place enforcement** | 一个约定只有到处出现才会变成习惯。Post-Generation + Protocol + Quick Ref + README + CONTRIBUTING + repo description | 只在 Post-Generation 提醒（太弱，用户看不到） |
+| **README 295 行全面重写** | 栋老师要"详细高级让别人看着很 nb"——需要叙事、图表、对比、哲学 | 小修小补（不符合"nb"标准） |
+| **不升版本号** | 功能没变，只是健壮性和文档。V2.3.0 仍然是准确的 | 升到 v2.3.1（changelog 太薄，不值得） |
+
+---
+
+## 8. File Map
+
+| 路径 | 用途 | 最终状态 |
+|------|------|----------|
+| `C:\Users\MECHREV\Desktop\handoff\SKILL.md` | **核心** — 技能定义 | 17 处 guard + canonical trigger + 跨平台 |
+| `C:\Users\MECHREV\Desktop\handoff\README.md` | GitHub 门面 | ~295 行专业文档 |
+| `C:\Users\MECHREV\Desktop\handoff\CONTRIBUTING.md` | 贡献指南 | 7+1 清单 + Convention |
+| `C:\Users\MECHREV\Desktop\handoff\HANDOFF-example.ftmd` | 示例 | 无需改（9-section 匹配） |
+| `C:\Users\MECHREV\Desktop\handoff\PROJECT.ftmd` | 长期记忆 | 已更新（Snapshot + 3 新 Decision + Open Questions） |
+| `C:\Users\MECHREV\.claude\skills\handoff\SKILL.md` | 运行时副本 | `diff` 确认与 Desktop 一致 |
+
+---
+
+## 9. Startup Protocol
+
+```bash
+# 项目是技能定义，无需启动命令
+
+# 新会话必读（按优先级）：
+# 1. PROJECT.ftmd              ← 长期记忆，了解项目历史和架构决策
+# 2. HANDOFF-2026-07-27.ftmd   ← 当前会话快照（本文件）
+# 3. SKILL.md                  ← 技能定义，一切从这里开始
+```

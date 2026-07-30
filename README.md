@@ -76,6 +76,18 @@ That's it. No dependencies, no config, no setup. Just copy the file.
 
 > ⚡ **「先读 HANDOFF」** is the canonical trigger phrase. Say exactly these four characters at the start of any new session, and Claude will read PROJECT.ftmd + the latest HANDOFF, verify git state, spot-check claims, and pick up where you left off — no re-explaining, no lost context.
 
+### 🔔 Auto-Reminder — Don't Remember to Say It
+
+Tired of forgetting to say "先读 HANDOFF"? Let Claude ask you instead:
+
+```bash
+python install_reminder.py
+```
+
+One command. Restart Claude Code. Every new session starts with a friendly reminder — no memorization required.
+
+> 💡 If you installed via AI, your Claude will offer to set this up for you after the first `/handoff`.
+
 📄 **[See a complete example](HANDOFF-example.ftmd)** — a realistic handoff showing all 9 sections in action.
 
 ## Commands

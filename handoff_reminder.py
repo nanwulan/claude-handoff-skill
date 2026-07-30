@@ -1,4 +1,4 @@
-import json, os, glob, sys
+import json, os, glob
 
 # Find latest handoff file
 claude_dir = os.path.expanduser("~/.claude")
@@ -11,7 +11,6 @@ if handoffs:
     latest = max(handoffs, key=os.path.getmtime)
     name = os.path.basename(latest)
     msg = f"📝 检测到交接文档 {name}。要不要先读 HANDOFF？"
-    print(msg, file=sys.stderr, flush=True)
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",
@@ -21,7 +20,6 @@ if handoffs:
 elif dones:
     # Has archived handoffs but no active ones
     msg = "📝 上次的交接文档已归档。要不要看看最近的项目状态？说「先读 HANDOFF」即可。"
-    print(msg, file=sys.stderr, flush=True)
     print(json.dumps({
         "hookSpecificOutput": {
             "hookEventName": "SessionStart",

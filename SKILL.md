@@ -274,9 +274,26 @@ Apply on every `/handoff` invocation:
 
 ## New Session Protocol
 
-Triggered by the user saying **"先读 HANDOFF"** (or any variant that means "read the handoff first"). This is the canonical resume command.
+Two triggers activate this protocol:
 
-When triggered, read in this order:
+| Trigger | Source | Action |
+|---------|--------|--------|
+| **Auto-detect** | SessionStart hook `additionalContext` | Model sees HANDOFF signal → asks user before reading ("📝 检测到交接文档 xxx.ftmd。要不要先读 HANDOFF？") |
+| **Manual** | User says "先读 HANDOFF" (canonical resume command) | Read immediately without asking |
+
+### Step 0 — Ask First (Auto-Detect Only)
+
+When the SessionStart hook injects a HANDOFF detection message via `additionalContext`, the model MUST **ask the user before reading anything**. The hook's signal is just that — a signal. It is NOT a command to auto-read.
+
+> "栋老师，检测到交接文档 `HANDOFF-2026-07-30.ftmd`。要不要先读？"
+
+Wait for user confirmation before proceeding to Step 1.
+
+**Rationale:** `additionalContext` goes to the model, not the terminal. The user may not have seen any prompt. Auto-reading without asking robs the user of control — they might be starting a fresh, unrelated task.
+
+### Step 1 — Read
+
+When triggered (auto-detect confirmed OR manual "先读 HANDOFF"), read in this order:
 
 1. **PROJECT.ftmd** first — understand the project's identity, history, environment
 2. **Latest HANDOFF-*.ftmd** (without `.done`) — get the current task state and next steps
@@ -343,7 +360,8 @@ Don't suggest more than 3 proactive checks per session.
 | `/handoff timeline` | Display Decision Log + Failure Memory from PROJECT.ftmd |
 | `/handoff status` | One-line project status from PROJECT.ftmd |
 | `/handoff doctor` | Health check: PROJECT, HANDOFF, Git, Env, Tests |
-| `先读 HANDOFF` (new session) | Read PROJECT.ftmd → read latest HANDOFF → summarize |
+| `先读 HANDOFF` (new session, manual) | Read PROJECT.ftmd → read latest HANDOFF → summarize |
+| Auto-detect (SessionStart hook) | Ask user first → if confirmed, same as manual flow |
 | Context rot detected | Suggest `/handoff` (max 2x/session) |
 | ~10th exchange milestone | Suggest `/handoff` (max 3x/session) |
 
@@ -361,6 +379,7 @@ Don't suggest more than 3 proactive checks per session.
 | Skipping PROJECT.ftmd update | HANDOFF alone isn't enough — decisions and failures must go to PROJECT.ftmd |
 | Duplicating Decision Log entries | Check PROJECT.ftmd before appending |
 | Deleting PROJECT.ftmd | It is the project's long-term memory — never auto-delete |
+| Auto-reading HANDOFF without asking | When hook auto-detects, model must ask user first before reading. additionalContext is a signal, not a command. |
 
 ## Post-Generation
 
@@ -413,7 +432,7 @@ Add to your `~/.claude/settings.json`:
           {
             "type": "command",
             "command": "python3",
-            "args": ["/absolute/path/to/handoff_reminder.py"]
+            "args": ["-u", "/absolute/path/to/handoff_reminder.py"]
           }
         ]
       }
@@ -425,13 +444,16 @@ Add to your `~/.claude/settings.json`:
 On Windows, use the absolute Python interpreter path:
 
 ```json
-"command": "C:\\Users\\<user>\\AppData\\Local\\Programs\\Python\\Python313\\python.exe"
+"command": "C:\\Users\\<user>\\AppData\\Local\\Programs\\Python\\Python313\\python.exe",
+"args": ["-u", "C:\\Users\\<user>\\path\\to\\handoff_reminder.py"]
 ```
 
 ### How it works
 
-- If a `HANDOFF-*.ftmd` exists → 📝 "检测到交接文档 xxx.ftmd。要不要先读 HANDOFF？"
-- If only archived `.done` files exist → hints that previous handoffs are available
+The hook runs at SessionStart, detects HANDOFF files, and injects a signal into the model's context via `additionalContext` (stdout JSON). The model then asks the user whether to read the handoff.
+
+- If a `HANDOFF-*.ftmd` exists → model sees: "📝 检测到交接文档 xxx.ftmd。要不要先读 HANDOFF？" → model asks user
+- If only archived `.done` files exist → model sees hint about past handoffs → model mentions availability
 - If no handoff files at all → silent (no interruption)
 
-The hook is zero-maintenance — set once, works forever.
+**Design note:** The hook does NOT output to stderr. Claude Code hook protocol (exit 0) does not display stderr to the terminal — only `additionalContext` reaches the model. The model is responsible for relaying the prompt to the user.
